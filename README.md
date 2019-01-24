@@ -1,4 +1,4 @@
-![Kin Token](kin_android.png)
+![Kin Token](kin-banner.jpg)
 # Kin Core Plugin for Unity
 
 Unity plugin responsible for providing access to the Kin native SDKs for managing Kin balance and transactions.
