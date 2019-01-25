@@ -1,1 +1,9 @@
-*.meta
+# OS X
+.DS_Store
+
+*.iml
+Kin Android/.idea
+Kin Android/.gradle
+Kin Android/build
+Kin Unity/.gradle
+Kin Unity/Logs

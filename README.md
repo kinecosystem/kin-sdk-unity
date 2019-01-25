@@ -27,7 +27,7 @@ dependencies {
 
     ...
 
-	implementation 'com.github.kinecosystem:kin-sdk-android:0.1.6'
+	implementation 'com.github.kinecosystem:kin-sdk-android:1.0.1'
 **DEPS**}
 
 ...
@@ -99,7 +99,7 @@ kinClient.DeleteAccount( int index );
 
 ## Onboarding
 
-Before an account can be used on the configured network, it must be funded with the native network asset. This step must be performed by a service, see the [Kin SDK documentation](https://github.com/kinecosystem/kin-core-android/blob/master/README.md) for details.
+Before an account can be used on the configured network, it must be funded with the native network asset. This step must be performed by a service, see the [Kin SDK documentation](https://github.com/kinecosystem/kin-sdk-android/blob/master/README.md) for details.
 
 The second step is to activate this account on the client side, using `Activate` method. The account will not be able to receive or send Kin before activation.
 
