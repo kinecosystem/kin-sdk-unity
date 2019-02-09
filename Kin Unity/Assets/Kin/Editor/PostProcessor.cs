@@ -40,6 +40,10 @@ namespace Kin
 				proj.SetBuildProperty( targetGuid, "SWIFT_OBJC_BRIDGING_HEADER", "KinPlugin-Bridging-Header.h" );
 				proj.SetBuildProperty( targetGuid, "SWIFT_OBJC_INTERFACE_HEADER_NAME", "KinPlugin-Generated-Swift.h" );
 				proj.SetBuildProperty( targetGuid, "SWIFT_VERSION", "4.2" );
+				proj.SetBuildProperty( targetGuid, "CLANG_ENABLE_MODULES", "YES" );
+				proj.AddBuildProperty( targetGuid, "LD_RUNPATH_SEARCH_PATHS", "@executable_path/Frameworks $(inherited)" );
+				proj.AddBuildProperty( targetGuid, "FRAMERWORK_SEARCH_PATHS", "$(inherited) $(PROJECT_DIR) $(PROJECT_DIR)/Frameworks" );
+				proj.AddBuildProperty( targetGuid, "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES", "YES" );
 
 				proj.WriteToFile( projPath );
 			}

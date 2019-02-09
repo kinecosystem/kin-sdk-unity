@@ -36,6 +36,7 @@ struct Provider: ServiceProvider {
 	var accountListeners = Dictionary<String,Promise<Void>>();
 	
 	let formatter = NumberFormatter()
+	var networkId: String = ""
 	
 	
 	override init()
@@ -43,6 +44,7 @@ struct Provider: ServiceProvider {
 		formatter.generatesDecimalNumbers = true
 	}
 	
+	// MARK: - helpers
 	
 	private func unitySendMessage( method: String, param: String ) {
 		UnitySendMessage( "KinManager", method, param )
@@ -108,21 +110,25 @@ struct Provider: ServiceProvider {
 	}
 	
 	
-	private func transactionToJson( transaction: TransactionEnvelope, accountId: String ) -> String {
-		//		json.put( "Id", transaction.getId().id() );
-		//		json.put( "WhitelistableTransactionPayLoad", transaction.getWhitelistableTransaction().getTransactionPayload() );
-		//		json.put( "WhitelistableTransactionNetworkPassphrase", transaction.getWhitelistableTransaction().getNetworkPassphrase() );
-		
-		// TODO
-//		let wtf = try? JSONEncoder().encode(transaction)
-//		print(String(data: wtf!, encoding: .utf8)!)
-		
-		var dict = ["AccountId": accountId] as [String : Any]
-		//dict["Id"] = transaction.tx.seqNum.tostring()
-		dict["WhitelistableTransactionPayLoad"] = ""
-		dict["WhitelistableTransactionNetworkPassphrase"] = ""
-		
+	private func randomString(length: Int) -> String {
+		let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+		return String((0...length-1).map{ _ in letters.randomElement()! })
+	}
+	
+	
+	private func transactionToJson( transaction: TransactionEnvelope, accountId: String, transactionId: String ) -> String {
 		do {
+			// do some hacking of the Decodable protocol to get the iOS data to match the Android data
+			let whitelistEnvelope = WhitelistEnvelope(transactionEnvelope: transaction, networkId: self.networkId)
+			let encodedEnvelope = try? JSONEncoder().encode(whitelistEnvelope)
+			let whitelistDict = try! JSONSerialization.jsonObject(with: encodedEnvelope!, options: []) as? [String:String]
+			let whitelistPayload = whitelistDict!["envelope"]
+			
+			var dict = ["AccountId": accountId] as [String : Any]
+			dict["Id"] = transactionId
+			dict["WhitelistableTransactionPayLoad"] = whitelistPayload
+			dict["WhitelistableTransactionNetworkPassphrase"] = Network.testNet.id
+			
 			let jsonData = try JSONSerialization.data( withJSONObject: dict, options: [] )
 			let jsonString = String( data: jsonData, encoding: .utf8 )
 			
@@ -143,6 +149,7 @@ struct Provider: ServiceProvider {
 		do {
 			let client = KinClient( provider: provider, appId: try AppId( apiKey ) )
 			self.clients[clientId] = client;
+			self.networkId = client.network.id
 		}
 		catch {
 			print( "could not create KinClient: \(error)" )
@@ -150,8 +157,20 @@ struct Provider: ServiceProvider {
 	}
 	
 	
+	@objc public func getMinimumFee( clientId: String ) {
+		if let client = self.clients[clientId] {
+			client.minFee().then { (fee) in
+				self.unitySendMessage( method: "GetMinimumFeeSucceeded", param: self.callbackToJson(accountId: clientId, value: fee.description ) )
+			}.error { (error) in
+				self.unitySendMessage( method: "GetMinimumFeeFailed", param: self.errorToJson(error: error, accountId: clientId ) )
+			}
+		}
+	}
+	
+	
 	@objc public func freeCachedClient( clientId: String ) {
 		if let _ = self.clients[clientId] {
+			print( "Freeing cached client" )
 			self.clients.removeValue( forKey: clientId )
 		}
 	}
@@ -207,9 +226,7 @@ struct Provider: ServiceProvider {
 			let account = client.accounts[index]
 			
 			do {
-				try client.deleteAccount( at: index )
-				
-				// now, remove the account from our cache
+				// find the key from our dict *before* deleting the account to avoid accessing a deleted account
 				var foundKey: String?
 				for key in self.accounts.keys {
 					let temp = self.accounts[key]
@@ -219,6 +236,8 @@ struct Provider: ServiceProvider {
 					}
 				}
 				
+				try client.deleteAccount( at: index )
+
 				if foundKey != nil {
 					self.accounts.removeValue( forKey: foundKey! )
 				}
@@ -243,6 +262,7 @@ struct Provider: ServiceProvider {
 	
 	@objc public func freeCachedAccount( accountId: String ) {
 		if self.accounts.keys.contains( accountId ) {
+			print( "Freeing cached account" )
 			self.accounts.removeValue( forKey: accountId )
 		}
 	}
@@ -268,20 +288,16 @@ struct Provider: ServiceProvider {
 	
 	@objc public func getStatus( accountId: String ) {
 		if let account = self.accounts[accountId] {
-			//account.status(completion:
 			account.status { (accountStatus, error) in
 				if let error = error {
 					self.unitySendMessage( method: "GetStatusFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
-					var status:String;
-					switch(accountStatus!)
-					{
-						case .created:
-							status = "Created";
-						case .notCreated:
-							status = "NotCrated";
+					// normalize to match Android
+					var statusInt = accountStatus!.rawValue
+					if statusInt == 1 {
+						statusInt += 1
 					}
-					self.unitySendMessage( method: "GetStatusSucceeded", param: self.callbackToJson(accountId: accountId, value: status) )
+					self.unitySendMessage( method: "GetStatusSucceeded", param: self.callbackToJson(accountId: accountId, value: String( statusInt ) ) )
 				}
 			}
 		}
@@ -307,9 +323,9 @@ struct Provider: ServiceProvider {
 				if let error = error {
 					self.unitySendMessage( method: "BuildTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
-					// TODO:
-					self.transactions["TODO"] = transaction
-					self.unitySendMessage( method: "BuildTransactionSucceeded", param: self.transactionToJson(transaction: transaction!, accountId: accountId) )
+					let transactionId = self.randomString(length: 15)
+					self.transactions[transactionId] = transaction
+					self.unitySendMessage( method: "BuildTransactionSucceeded", param: self.transactionToJson(transaction: transaction!, accountId: accountId, transactionId: transactionId ) )
 				}
 			}
 		}
@@ -319,7 +335,33 @@ struct Provider: ServiceProvider {
 	@objc public func sendTransaction( accountId: String, id: String ) {
 		if let account = self.accounts[accountId] {
 			if let transaction = self.transactions[id] {
+				self.transactions.removeValue(forKey: id)
 				account.sendTransaction(transaction) { (transactionId, error) in
+					if let error = error {
+						self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+					} else {
+						self.unitySendMessage( method: "SendTransactionSucceeded", param: self.callbackToJson(accountId: accountId, value: transactionId!) )
+					}
+				}
+			}
+		}
+	}
+	
+	
+	@objc public func sendWhitelistTransaction( accountId: String, id: String, whitelist: String ) {
+		if let account = self.accounts[accountId] {
+			if self.transactions[id] != nil {
+				var envelope: TransactionEnvelope
+				let envelopeError = NSError()
+				do {
+					envelope = try TransactionEnvelope.decodeResponse(data: whitelist.data(using: .utf8), error: envelopeError)
+				} catch {
+					self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: envelopeError, accountId: accountId ) )
+					return
+				}
+				
+				self.transactions.removeValue(forKey: id)
+				account.sendTransaction(envelope) { (transactionId, error) in
 					if let error = error {
 						self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 					} else {

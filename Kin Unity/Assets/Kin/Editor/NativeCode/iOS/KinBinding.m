@@ -67,7 +67,7 @@ void _kinClearAllAccounts( const char* clientId )
 
 void _kinGetMinimumFee( const char* client )
 {
-	
+	[KinPlugin.instance getMinimumFeeWithClientId:GetStringParam( client )];
 }
 
 
@@ -105,23 +105,25 @@ void _kinGetBalance( const char* accountId )
 
 void _kinBuildTransaction( const char* accountId, const char* toAddress, const char* kinAmount, int fee, const char* memo )
 {
-//	[KinPlugin.instance sendTransactionWithAccountId:GetStringParam( accountId )
-//										   toAddress:GetStringParam( toAddress )
-//										   kinAmount:GetStringParam( kinAmount )
-//												memo:GetStringParamOrNil( memo )];
+	[KinPlugin.instance buildTransactionWithAccountId:GetStringParam( accountId )
+											toAddress:GetStringParam( toAddress )
+											kinAmount:GetStringParam( kinAmount )
+												  fee:fee
+												 memo:GetStringParamOrNil( memo )];
 }
 
 
 void _kinSendWhitelistTransaction( const char* accountId, const char* transactionId, const char* whitelist )
 {
-	
+	[KinPlugin.instance sendWhitelistTransactionWithAccountId:GetStringParam( accountId )
+														   id:GetStringParam( transactionId )
+													whitelist:GetStringParam( whitelist )];
 }
 
 
 void _kinSendTransaction( const char* accountId, const char* transactionId )
 {
-	[KinPlugin.instance sendTransactionWithAccountId:GetStringParam( accountId )
-										   transactionId:GetStringParam( transactionId )];
+	[KinPlugin.instance sendTransactionWithAccountId:GetStringParam( accountId ) id:GetStringParam( transactionId )];
 }
 
 
