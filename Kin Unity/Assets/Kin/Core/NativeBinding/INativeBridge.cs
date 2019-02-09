@@ -41,8 +41,6 @@ namespace Kin
 
 		string Export( string accountId, string passphrase );
 
-		void Activate( string accountId );
-
 		void GetStatus( string accountId );
 
 		void GetBalance( string accountId );

@@ -83,10 +83,6 @@ namespace Kin
 		}
 
 
-		public void Activate( string accountId )
-		{}
-
-
 		public void GetStatus( string accountId )
 		{}
 
