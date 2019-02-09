@@ -1,0 +1,11 @@
+framework module KinUtil {
+  umbrella header "KinUtil.h"
+
+  export *
+  module * { export * }
+}
+
+module KinUtil.Swift {
+    header "KinUtil-Swift.h"
+    requires objc
+}
