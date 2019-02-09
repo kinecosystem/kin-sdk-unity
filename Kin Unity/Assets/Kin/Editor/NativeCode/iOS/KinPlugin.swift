@@ -29,6 +29,7 @@ struct Provider: ServiceProvider {
 	
 	var clients: Dictionary<String,KinClient> = Dictionary<String,KinClient>()
 	var accounts: Dictionary<String,KinAccount> = Dictionary<String,KinAccount>()
+	var transactions: Dictionary<String,TransactionEnvelope> = Dictionary<String,TransactionEnvelope>()
 	
 	var paymentListeners = Dictionary<String,PaymentWatch>()
 	var balanceListeners = Dictionary<String,BalanceWatch>()
@@ -108,15 +109,16 @@ struct Provider: ServiceProvider {
 	
 	
 	private func transactionToJson( transaction: TransactionEnvelope, accountId: String ) -> String {
-//		json.put( "Id", transaction.getId().id() );
-//		json.put( "WhitelistableTransactionPayLoad", transaction.getWhitelistableTransaction().getTransactionPayload() );
-//		json.put( "WhitelistableTransactionNetworkPassphrase", transaction.getWhitelistableTransaction().getNetworkPassphrase() );
+		//		json.put( "Id", transaction.getId().id() );
+		//		json.put( "WhitelistableTransactionPayLoad", transaction.getWhitelistableTransaction().getTransactionPayload() );
+		//		json.put( "WhitelistableTransactionNetworkPassphrase", transaction.getWhitelistableTransaction().getNetworkPassphrase() );
 		
-		let wtf = try? JSONEncoder().encode(transaction)
-		print(String(data: wtf!, encoding: .utf8)!)
+		// TODO
+//		let wtf = try? JSONEncoder().encode(transaction)
+//		print(String(data: wtf!, encoding: .utf8)!)
 		
 		var dict = ["AccountId": accountId] as [String : Any]
-		dict["Id"] = transaction.tx.seqNum.tostring()
+		//dict["Id"] = transaction.tx.seqNum.tostring()
 		dict["WhitelistableTransactionPayLoad"] = ""
 		dict["WhitelistableTransactionNetworkPassphrase"] = ""
 		
@@ -131,13 +133,13 @@ struct Provider: ServiceProvider {
 		}
 	}
 	
-
+	
 	// MARK: - KinClient
 	
 	@objc public func createClient( clientId: String, environment: Int, apiKey: String, storeKey: String = "" )
 	{
 		let provider = environment == 0 ? Provider.Test : Provider.Main
-
+		
 		do {
 			let client = KinClient( provider: provider, appId: try AppId( apiKey ) )
 			self.clients[clientId] = client;
@@ -146,8 +148,8 @@ struct Provider: ServiceProvider {
 			print( "could not create KinClient: \(error)" )
 		}
 	}
-
-
+	
+	
 	@objc public func freeCachedClient( clientId: String ) {
 		if let _ = self.clients[clientId] {
 			self.clients.removeValue( forKey: clientId )
@@ -157,9 +159,11 @@ struct Provider: ServiceProvider {
 	
 	@objc public func importAccount( clientId: String, accountId: String, exportedJson: String, passphrase: String ) -> String? {
 		do {
-			let kinAccount = try self.clients[clientId].importAccount(exportedJson, passphrase: passphrase)
-			self.accounts[accountId] = kinAccount
-			return "";
+			if let client = self.clients[clientId] {
+				let kinAccount = try client.importAccount(exportedJson, passphrase: passphrase)
+				self.accounts[accountId] = kinAccount
+				return "";
+			}
 		}
 		catch {
 			print( "KinAccount couldn't be imported: \(error)" )
@@ -252,7 +256,7 @@ struct Provider: ServiceProvider {
 	@objc public func export( accountId: String, passphrase: String ) -> String? {
 		if let account = self.accounts[accountId] {
 			do {
-				return try? account.export( passphrase: passphrase )
+				return try account.export( passphrase: passphrase )
 			}
 			catch {
 				print( "KinAccount couldn't be exported: \(error)" )
@@ -265,36 +269,65 @@ struct Provider: ServiceProvider {
 	@objc public func getStatus( accountId: String ) {
 		if let account = self.accounts[accountId] {
 			//account.status(completion:
+			account.status { (accountStatus, error) in
+				if let error = error {
+					self.unitySendMessage( method: "GetStatusFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+				} else {
+					var status:String;
+					switch(accountStatus!)
+					{
+						case .created:
+							status = "Created";
+						case .notCreated:
+							status = "NotCrated";
+					}
+					self.unitySendMessage( method: "GetStatusSucceeded", param: self.callbackToJson(accountId: accountId, value: status) )
+				}
+			}
 		}
-		unitySendMessage( method: "GetStatusSucceeded", param: "" )
-		unitySendMessage( method: "GetStatusFailed", param: errorToJson( error: NSError(), accountId: accountId ) )
 	}
 	
 	
 	@objc public func getBalance( accountId: String ) {
 		if let account = self.accounts[accountId] {
-			//account.balance(completion:
+			account.balance { (kin, error) in
+				if let error = error {
+					self.unitySendMessage( method: "GetBalanceFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+				} else {
+					self.unitySendMessage( method: "GetBalanceSucceeded", param: self.callbackToJson(accountId: accountId, value: (kin?.description)!) )
+				}
+			}
 		}
-		unitySendMessage( method: "GetBalanceSucceeded", param: "" )
-		unitySendMessage( method: "GetBalanceFailed", param: errorToJson( error: NSError(), accountId: accountId ) )
 	}
 	
 	
-	@objc public func buildTransaction( accountId: String, toAddress: String, kinAmount: String, UInt32 fee, memo: String! = nil ) {
+	@objc public func buildTransaction( accountId: String, toAddress: String, kinAmount: String, fee: UInt32, memo: String! = nil ) {
 		if let account = self.accounts[accountId] {
-			//account.generateTransaction(completion:
+			account.generateTransaction(to: toAddress, kin: Decimal(string: kinAmount)!, memo: memo, fee: fee) { (transaction, error) in
+				if let error = error {
+					self.unitySendMessage( method: "BuildTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+				} else {
+					// TODO:
+					self.transactions["TODO"] = transaction
+					self.unitySendMessage( method: "BuildTransactionSucceeded", param: self.transactionToJson(transaction: transaction!, accountId: accountId) )
+				}
+			}
 		}
-		unitySendMessage( method: "BuildTransactionSucceeded", param: "" )
-		unitySendMessage( method: "BuildTransactionFailed", param: errorToJson( error: NSError(), accountId: accountId ) )
 	}
 	
 	
 	@objc public func sendTransaction( accountId: String, id: String ) {
 		if let account = self.accounts[accountId] {
-			//account.status(completion:
+			if let transaction = self.transactions[id] {
+				account.sendTransaction(transaction) { (transactionId, error) in
+					if let error = error {
+						self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+					} else {
+						self.unitySendMessage( method: "SendTransactionSucceeded", param: self.callbackToJson(accountId: accountId, value: transactionId!) )
+					}
+				}
+			}
 		}
-		unitySendMessage( method: "SendTransactionSucceeded", param: "" )
-		unitySendMessage( method: "SendTransactionFailed", param: errorToJson( error: NSError(), accountId: accountId ) )
 	}
 	
 	
@@ -302,13 +335,13 @@ struct Provider: ServiceProvider {
 	
 	@objc public func addPaymentListener( accountId: String ) {
 		if let account = self.accounts[accountId] {
-			let watch = try? account.watchPayments(nil)
+			let watch = try? account.watchPayments(cursor: nil)
 			watch?.emitter.on(queue: .main, next: { [weak self] payment in
-				let paymentInfoJson = paymentInfoToJson( paymentInfo: payment, accountId: accountId)
-				unitySendMessage( method: "OnPayment", param: paymentInfoJson )
+				let paymentInfoJson = self?.paymentInfoToJson( paymentInfo: payment, accountId: accountId)
+				self?.unitySendMessage( method: "OnPayment", param: paymentInfoJson! )
 			})
 			
-			self.balanceListeners[accountId] = watch
+			self.paymentListeners[accountId] = watch
 		}
 	}
 	
@@ -324,8 +357,8 @@ struct Provider: ServiceProvider {
 		if let account = self.accounts[accountId] {
 			let watch = try? account.watchBalance(nil)
 			watch?.emitter.on(queue: .main, next: { [weak self] balance in
-				let callbackJson = callbackToJson(accountId: accountId, value: balance)
-				unitySendMessage( method: "OnBalance", param: callbackJson )
+				let callbackJson = self?.callbackToJson(accountId: accountId, value: balance.description)
+				self?.unitySendMessage( method: "OnBalance", param: callbackJson! )
 			})
 			
 			self.balanceListeners[accountId] = watch
@@ -343,10 +376,10 @@ struct Provider: ServiceProvider {
 	@objc public func addAccountCreationListener( accountId: String ) {
 		if let account = self.accounts[accountId] {
 			let watch = try? account.watchCreation()
-			watch?.emitter.on(queue: .main, next: {
-				unitySendMessage( method: "OnAccountCreated", param: accountId )
-			})
-				
+			watch?.finally {
+				self.unitySendMessage( method: "OnAccountCreated", param: accountId )
+			}
+			
 			self.accountListeners[accountId] = watch
 		}
 	}
@@ -357,5 +390,5 @@ struct Provider: ServiceProvider {
 			self.accountListeners.removeValue( forKey: accountId )
 		}
 	}
-
+	
 }
