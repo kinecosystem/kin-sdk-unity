@@ -91,7 +91,7 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        AddToEmbeddedBinaries: false
+        AddToEmbeddedBinaries: true
         CompileFlags: 
         FrameworkDependencies: 
   userData: 
