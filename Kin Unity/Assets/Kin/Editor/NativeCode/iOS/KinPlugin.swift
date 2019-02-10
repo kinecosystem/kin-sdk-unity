@@ -7,6 +7,7 @@
 
 import Foundation
 import KinSDK
+import Sodium
 
 
 struct Provider: ServiceProvider {
@@ -107,12 +108,6 @@ struct Provider: ServiceProvider {
 		catch {
 			return "{}"
 		}
-	}
-	
-	
-	private func randomString(length: Int) -> String {
-		let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		return String((0...length-1).map{ _ in letters.randomElement()! })
 	}
 	
 	
@@ -287,6 +282,7 @@ struct Provider: ServiceProvider {
 		return nil
 	}
 	
+	
 	@objc public func getStatus( accountId: String ) {
 		if let account = self.accounts[accountId] {
 			account.status { (accountStatus, error) in
@@ -327,9 +323,15 @@ struct Provider: ServiceProvider {
 					print( "buildTransaction failed: \(error)" )
 					self.unitySendMessage( method: "BuildTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
-					let transactionId = self.randomString(length: 15)
-					self.transactions[transactionId] = transaction
-					self.unitySendMessage( method: "BuildTransactionSucceeded", param: self.transactionToJson(transaction: transaction!, accountId: accountId, transactionId: transactionId ) )
+					do {
+						let transactionIdHash = try transaction?.tx.hash(networkId: self.networkId)
+						let transactionId = transactionIdHash!.hexString
+						self.transactions[transactionId] = transaction
+						self.unitySendMessage( method: "BuildTransactionSucceeded", param: self.transactionToJson(transaction: transaction!, accountId: accountId, transactionId: transactionId ) )
+					} catch {
+						print( "buildTransaction failed: \(error)" )
+						self.unitySendMessage( method: "BuildTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
+					}
 				}
 			}
 		}
