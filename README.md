@@ -47,6 +47,8 @@ android {
 
 In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
 
+Note: if you plaon on doing any native iOS developement on the plugin, there are some changes that need to be made to the KinSDK, KinUtil and Sodium Xcode projects. They all need to have bitcode enabled and "build active achitectures only" set to no so that you can get debug symobols.
+
 
 ## Get Started
 
