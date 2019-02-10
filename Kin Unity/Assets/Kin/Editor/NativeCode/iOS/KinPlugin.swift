@@ -160,9 +160,10 @@ struct Provider: ServiceProvider {
 	@objc public func getMinimumFee( clientId: String ) {
 		if let client = self.clients[clientId] {
 			client.minFee().then { (fee) in
-				self.unitySendMessage( method: "GetMinimumFeeSucceeded", param: self.callbackToJson(accountId: clientId, value: fee.description ) )
+				self.unitySendMessage( method: "GetMinimumFeeSucceeded", param: self.callbackToJson( accountId: clientId, value: fee.description ) )
 			}.error { (error) in
-				self.unitySendMessage( method: "GetMinimumFeeFailed", param: self.errorToJson(error: error, accountId: clientId ) )
+				print( "getMinimumFee failed: \(error)" )
+				self.unitySendMessage( method: "GetMinimumFeeFailed", param: self.errorToJson( error: error, accountId: clientId ) )
 			}
 		}
 	}
@@ -290,6 +291,7 @@ struct Provider: ServiceProvider {
 		if let account = self.accounts[accountId] {
 			account.status { (accountStatus, error) in
 				if let error = error {
+					print( "getStatus failed: \(error)" )
 					self.unitySendMessage( method: "GetStatusFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
 					// normalize to match Android
@@ -308,6 +310,7 @@ struct Provider: ServiceProvider {
 		if let account = self.accounts[accountId] {
 			account.balance { (kin, error) in
 				if let error = error {
+					print( "getBalance failed: \(error)" )
 					self.unitySendMessage( method: "GetBalanceFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
 					self.unitySendMessage( method: "GetBalanceSucceeded", param: self.callbackToJson(accountId: accountId, value: (kin?.description)!) )
@@ -321,6 +324,7 @@ struct Provider: ServiceProvider {
 		if let account = self.accounts[accountId] {
 			account.generateTransaction(to: toAddress, kin: Decimal(string: kinAmount)!, memo: memo, fee: fee) { (transaction, error) in
 				if let error = error {
+					print( "buildTransaction failed: \(error)" )
 					self.unitySendMessage( method: "BuildTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 				} else {
 					let transactionId = self.randomString(length: 15)
@@ -338,6 +342,7 @@ struct Provider: ServiceProvider {
 				self.transactions.removeValue(forKey: id)
 				account.sendTransaction(transaction) { (transactionId, error) in
 					if let error = error {
+						print( "sendTransaction failed: \(error)" )
 						self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 					} else {
 						self.unitySendMessage( method: "SendTransactionSucceeded", param: self.callbackToJson(accountId: accountId, value: transactionId!) )
@@ -356,6 +361,7 @@ struct Provider: ServiceProvider {
 				do {
 					envelope = try TransactionEnvelope.decodeResponse(data: whitelist.data(using: .utf8), error: envelopeError)
 				} catch {
+					print( "TransactionEnvelope.decodeResponse failed: \(error)" )
 					self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: envelopeError, accountId: accountId ) )
 					return
 				}
@@ -363,6 +369,7 @@ struct Provider: ServiceProvider {
 				self.transactions.removeValue(forKey: id)
 				account.sendTransaction(envelope) { (transactionId, error) in
 					if let error = error {
+						print( "sendTransaction failed: \(error)" )
 						self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 					} else {
 						self.unitySendMessage( method: "SendTransactionSucceeded", param: self.callbackToJson(accountId: accountId, value: transactionId!) )
