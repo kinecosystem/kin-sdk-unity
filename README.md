@@ -47,7 +47,7 @@ android {
 
 In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
 
-Note: if you plaon on doing any native iOS developement on the plugin, there are some changes that need to be made to the KinSDK, KinUtil and Sodium Xcode projects. They all need to have bitcode enabled and "build active achitectures only" set to no so that you can get debug symobols.
+Note: if you plan on doing any native iOS developement on the plugin, there are some changes that need to be made to the KinSDK, KinUtil and Sodium Xcode projects. They all need to have bitcode enabled and "build active achitectures only" set to no so that you can get debug symobols.
 
 
 ## Get Started
@@ -90,7 +90,7 @@ Calling `GetAccount` with the existing account index, will retrieve the account 
 
 ```csharp
 if( kinClient.HasAccount() )
-    account = kinClient.getAccount( 0 );
+    account = kinClient.GetAccount( 0 );
 ```
 
 You can delete your account from the device using `DeleteAccount`, but beware! you will lose all your existing KIN if you do this.
@@ -101,19 +101,8 @@ kinClient.DeleteAccount( int index );
 
 ## Onboarding
 
-Before an account can be used on the configured network, it must be funded with the native network asset. This step must be performed by a service, see the [Kin SDK documentation](https://github.com/kinecosystem/kin-sdk-android/blob/master/README.md) for details.
+Before an account can be used on the configured network, it must be created on the blockchain and funded with the native network asset. This step must be performed by a service, see the [Kin SDK documentation](https://github.com/kinecosystem/kin-sdk-android/blob/master/README.md) for details. When working with the Kin test servers, you can use the friendbot service (see the `KinOnboarding` class in the Unity demo project) to get your test accounts setup and funded.
 
-The second step is to activate this account on the client side, using `Activate` method. The account will not be able to receive or send Kin before activation.
-
-```csharp
-account.Activate( ex =>
-{
-	if( ex != null )
-		Debug.LogError( "Activate Failed. " + ex );
-	else
-		Debug.Log( "Account activated" );
-});
-```
 
 ## Account Information
 
@@ -200,7 +189,7 @@ account.BuildTransaction( toAddress, amountInKin, fee, ( ex, transaction ) =>
 
 ### Transferring Kin to another account using whitelist service
 
-The flow is very similar to the above code but here there is a middle stage in which you get the WhitelistableTransaction details from the 'Transaction' object just after you build the transaction and you send it to the whitelist service. Then you just use the method 'sendWhitelistTransaction( string whitelist )' and the parameter for that method is what you got from that service.
+The flow is very similar to the above code but here there is a middle stage in which you get the whitelistable transaction details from the 'Transaction' object just after you build the transaction and you send it to the whitelist service (which is hosted on your own servers). Then you use the method 'sendWhitelistTransaction( string whitelist )' where the parameter `whitelist` for that method is what you get back from the whiteliest service.
 
 ```csharp
 account.BuildTransaction( toAddress, amountInKin, fee, ( ex, transaction ) =>
