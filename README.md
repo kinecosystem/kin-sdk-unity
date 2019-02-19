@@ -43,7 +43,7 @@ Note: if you plan on doing any native iOS developement on the plugin, there are 
 
 Create a new `KinClient`, with an `Environment` enum that provides details of how to access the Kin Blockchain end points for test and production. `Environment` provides the predefined `Environment.TEST` and `Environment.PRODUCTION` values.
 
-An `appID` is a unique identifier assigned to you by Kin. During testing you can use any four-character string consisting of only upper and/or lower case letters and/or digits. For more information see [appID](../appid).
+An `appID` is a unique identifier assigned to you by Kin. During testing you can use any four-character string consisting of only upper and/or lower case letters and/or digits. For more information see [appID](https://kinecosystem.github.io/kin-website-docs/docs/appid).
 
 
 The example below creates a `KinClient` that will be used to connect to the Kin test environment:
@@ -89,7 +89,7 @@ At this point in the process your Unity client has created an `account` but the 
 
 The process of onboarding a new account consists of two steps, first creating a keypair and `account` structure on the client as we did before, then creating the public address on the Kin Blockchain.
 
-Remember that new accounts are created with 0 Kin, so you will have fund them. On the Kin Blockchain testnet you can create and fund accounts using the [friendbot](../friendbot).
+Remember that new accounts are created with 0 Kin, so you will have fund them. On the Kin Blockchain testnet you can create and fund accounts using the [friendbot](https://kinecosystem.github.io/kin-website-docs/docs/friendbot).
 
 ## Account Information
 
@@ -186,7 +186,7 @@ By default, transactions on the Kin Blockchain are charged a minimal fee (1 KIN 
 
 If your Unity games are part of the whitelist service, there's an additional step required before your users submit blockchain transactions such as the transfer Kin transaction.
 
-- Send the 'Transaction' object you build in your client to your server running the [Kin SDK for Python](python-sdk).
+- Send the 'Transaction' object you build in your client to your server running the [Kin SDK for Python](https://kinecosystem.github.io/kin-website-docs/docs/documentation/python-sdk).
 - In your server, use the `whitelist_transaction` function in the `KinAccount` class to sign the transaction.
 - Send the signed whitelisted transaction back to the client.
 - Send the signed whitelisted transaction from the client to the blockchain endpoint.
