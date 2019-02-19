@@ -85,7 +85,7 @@ kinClient.DeleteAccount( int index );
 
 ## Onboarding
 
-At this point in the process your Unity client has created an `account` but the Kin Blockchain does not yet know about it. In the production environment Kin clients are not authorized to create new accounts on the Kin Blockchain. Your server will be authorized to create accounts on their behalf using the [Kin SDK for Python](python-sdk.md).  
+At this point in the process your Unity client has created an `account` but the Kin Blockchain does not yet know about it. In the production environment Kin clients are not authorized to create new accounts on the Kin Blockchain. Your server will be authorized to create accounts on their behalf using the [Kin SDK for Python](https://kinecosystem.github.io/kin-website-docs/docs/documentation/python-sdk).  
 
 The process of onboarding a new account consists of two steps, first creating a keypair and `account` structure on the client as we did before, then creating the public address on the Kin Blockchain.
 
