@@ -85,7 +85,7 @@ try
     if( !kinClient.HasAccount() )
         account = kinClient.AddAccount();
 }
-catch( Exception e )
+catch( KinException e )
 {
     Debug.LogError( e );
 }
