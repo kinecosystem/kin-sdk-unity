@@ -11,8 +11,7 @@ namespace Kin
 {
 	static class PostProcessor
 	{
-		[MenuItem( "KIN/GO" )]
-		static void test()
+		static void ManuallyRunPostProcessor()
 		{
 			var buildPath = Path.Combine( Directory.GetCurrentDirectory(), "Xcode" );
 			OnPostProcessBuild( BuildTarget.iOS, buildPath );

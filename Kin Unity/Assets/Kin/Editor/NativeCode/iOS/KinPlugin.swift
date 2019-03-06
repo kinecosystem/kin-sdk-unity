@@ -210,10 +210,12 @@ struct Provider: ServiceProvider {
 	
 	@objc public func getAccount( clientId: String, accountId: String, index: Int ) -> Bool {
 		if let client = self.clients[clientId] {
-			let account = client.accounts[index]
-			self.accounts[accountId] = account
+			if let account = client.accounts[index] {
+				self.accounts[accountId] = account
+				return true
+			}
 		}
-		return true
+		return false
 	}
 	
 	
