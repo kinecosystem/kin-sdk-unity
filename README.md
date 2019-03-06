@@ -54,7 +54,12 @@ Note: if you plan on doing any native iOS developement on the plugin, there are 
 
 ### Connecting to a service provider
 
-Create a new `KinClient`, with an `Environment` enum that provides details of how to access the kin blockchain end point, Environment provides the predefined `Environment.TEST` and `Environment.PRODUCTION`.
+Enable the use of the Kin namespace.
+```csharp
+using Kin;
+```
+
+Create a new `KinClient`, with an `Environment` enum that provides details of how to access the kin blockchain end point, Environment provides the predefined `Environment.Test` and `Environment.Production`.
 
 `appId` is a 4 character string which represent the application id which will be added to each transaction.
 appId must contain only upper and/or lower case letters and/or digits and that the total string length is exactly 4.
@@ -66,7 +71,7 @@ each different `storeKey` will have a separate data, an example use-case - store
 The example below creates a `KinClient` that will be used to connect to the kin test network:
 
 ```csharp
-kinClient = new KinClient( Environment.TEST, "1acd" )
+kinClient = new KinClient( Environment.Test, "1acd" )
 ```
 
 ### Creating and retrieving a KIN account
