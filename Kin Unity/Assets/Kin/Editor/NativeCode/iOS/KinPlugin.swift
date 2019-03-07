@@ -189,6 +189,25 @@ struct Provider: ServiceProvider {
 	
 	
 	@objc public func getAccountCount( clientId: String ) -> Int {
+		
+		do {
+			let whitelist = "AAAAAHWYiBRk/u5UUelzgf/y4o6I/9sUNEP7FAf4LLwwJR4RAAAAZAAUPkIAAAACAAAAAAAAAAEAAAAHMS10ZXN0LQAAAAABAAAAAQAAAAB1mIgUZP7uVFHpc4H/8uKOiP/bFDRD+xQH+Cy8MCUeEQAAAAEAAAAAdZiIFGT+7lRR6XOB//Lijoj/2xQ0Q/sUB/gsvDAlHhEAAAAAAAAAAAABhqAAAAAAAAAAAjAlHhEAAABAkLqe1IOLYp7y17sPuPtVz0fVjxjMEXDQQ9sQJPIqpw7bWux9fQXtv5m11spxhcMpOXWkQn9sHbn9veIJtjBkBlgA/10AAABAoBcEDuLXw20g3Wn9J/cJ+qrFQ18hoIT4wFMVNz2+Izvvy8Zdmle90nszkaR9iUnz5tCkSAu7GUIWrnEM23+xCw=="
+			let envelope = try TransactionEnvelope.decodeResponse(data: whitelist.data(using: .utf8), error: nil)
+			print("created envelope")
+		}
+		catch {
+			print("failed to create envelope")
+		}
+		
+		do {
+			let whitelist = "AAAAAHWYiBRk/u5UUelzgf/y4o6I/9sUNEP7FAf4LLwwJR4RAAAAZAAUPkIAAAACAAAAAAAAAAEAAAAHMS10ZXN0LQAAAAABAAAAAQAAAAB1mIgUZP7uVFHpc4H/8uKOiP/bFDRD+xQH+Cy8MCUeEQAAAAEAAAAAdZiIFGT+7lRR6XOB//Lijoj/2xQ0Q/sUB/gsvDAlHhEAAAAAAAAAAAABhqAAAAAAAAAAAjAlHhEAAABAkLqe1IOLYp7y17sPuPtVz0fVjxjMEXDQQ9sQJPIqpw7bWux9fQXtv5m11spxhcMpOXWkQn9sHbn9veIJtjBkBlgA/10AAABAoBcEDuLXw20g3Wn9J/cJ+qrFQ18hoIT4wFMVNz2+Izvvy8Zdmle90nszkaR9iUnz5tCkSAu7GUIWrnEM23+xCw=="
+			let envelope = try XDRDecoder.decode(TransactionEnvelope.self, data: (whitelist.data(using: .utf8))!)
+			print("created envelope")
+		}
+		catch {
+			print("failed to create envelope: \(error)")
+		}
+		
 		return self.clients[clientId]?.accounts.count ?? -1
 	}
 	
@@ -363,9 +382,14 @@ struct Provider: ServiceProvider {
 				var envelope: TransactionEnvelope
 				let envelopeError = NSError()
 				do {
+					//envelope = try XDRDecoder.decode(TransactionEnvelope.self, data: whitelist.data(using: .utf8)!)
 					envelope = try TransactionEnvelope.decodeResponse(data: whitelist.data(using: .utf8), error: envelopeError)
 				} catch {
-					print( "TransactionEnvelope.decodeResponse failed: \(error)" )
+					if error != nil {
+						print( "TransactionEnvelope.decodeResponse failed: \(envelopeError)" )
+					} else {
+						print( "TransactionEnvelope.decodeResponse failed" )
+					}
 					self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: envelopeError, accountId: accountId ) )
 					return
 				}
