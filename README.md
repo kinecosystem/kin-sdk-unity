@@ -58,6 +58,7 @@ Enable the use of the Kin namespace.
 ```csharp
 using Kin;
 ```
+*Note: Unless run on an Android phone or emulator (not the Unity Editor),  the namespace will return null values for function calls to it.*
 
 Create a new `KinClient`, with an `Environment` enum that provides details of how to access the kin blockchain end point, Environment provides the predefined `Environment.Test` and `Environment.Production`.
 
