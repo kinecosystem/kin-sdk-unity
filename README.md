@@ -153,6 +153,12 @@ account.GetBalance( ( ex, balance ) =>
 
 ## Transactions
 
+### Viewing transactions
+
+Test and Production transactions can be viewed online at:
+
+[https://laboratory-beta.kininfrastructure.com/#explorer?resource=payments](https://laboratory-beta.kininfrastructure.com/#explorer?resource=payments)
+
 ### Transferring Kin to another account
 
 To transfer Kin to another account, you need the public address of the account you want to transfer the KIN to. Also if your app is not in the Kin whitelist then you need to also apply a fee. Amount of 1 fee equals to 1/100000 KIN. If you are in the whitelist then look after the next example to see how you can send a whitelist transaction.
