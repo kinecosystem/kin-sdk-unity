@@ -261,6 +261,11 @@ namespace Kin
 						Debug.LogError( "Send Transaction Failed. " + ex );
 				});
 			}
+
+			if( _transaction != null && GUILayout.Button( "Send Whitelist Transaction" ) )
+			{
+				StartCoroutine( SendWhitelistTransaction() );
+			}
 		}
 
 
@@ -318,6 +323,25 @@ namespace Kin
 		}
 
 		#endregion
+
+
+		IEnumerator SendWhitelistTransaction()
+		{
+			ShowProgressWindow( "Prepare Whitelist Transaction" );
+			yield return StartCoroutine( KinOnboarding.WhitelistTransaction( _transaction, whitelist =>
+			{
+				ShowProgressWindow( "Prepare Whitelist Transaction" );
+				_account.SendWhitelistTransaction( _transaction.Id, whitelist, ( ex, transactionId ) =>
+				{
+					HideProgressWindow();
+					_transaction = null;
+					if( ex == null )
+						Debug.Log( "Send Whitelist Transaction: " + transactionId );
+					else
+						Debug.LogError( "Send  WhitelistTransaction Failed. " + ex );
+				});
+			}));
+		}
 
 	}
 }

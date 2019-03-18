@@ -282,7 +282,6 @@ namespace Kin
 		}
 
 
-
 		/// <summary>
 		/// does a best effort to see if we've got an iphone X with a notch
 		/// </summary>

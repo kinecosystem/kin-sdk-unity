@@ -361,12 +361,11 @@ struct Provider: ServiceProvider {
 		if let account = self.accounts[accountId] {
 			if self.transactions[id] != nil {
 				var envelope: TransactionEnvelope
-				let envelopeError = NSError()
 				do {
-					envelope = try TransactionEnvelope.decodeResponse(data: whitelist.data(using: .utf8), error: envelopeError)
+					envelope = try XDRDecoder.decode(TransactionEnvelope.self, data: Data(base64Encoded: whitelist)!)
 				} catch {
 					print( "TransactionEnvelope.decodeResponse failed: \(error)" )
-					self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: envelopeError, accountId: accountId ) )
+					self.unitySendMessage( method: "SendTransactionFailed", param: self.errorToJson( error: error, accountId: accountId ) )
 					return
 				}
 				
