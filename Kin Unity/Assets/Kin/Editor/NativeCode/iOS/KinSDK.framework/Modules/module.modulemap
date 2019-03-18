@@ -1,0 +1,11 @@
+framework module KinSDK {
+  umbrella header "KinSDK.h"
+
+  export *
+  module * { export * }
+}
+
+module KinSDK.Swift {
+    header "KinSDK-Swift.h"
+    requires objc
+}

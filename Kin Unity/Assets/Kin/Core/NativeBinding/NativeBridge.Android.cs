@@ -100,12 +100,6 @@ namespace Kin
 		}
 
 
-		public void Activate( string accountId )
-		{
-			_plugin.Call( "activate", accountId );
-		}
-
-
 		public void GetStatus( string accountId )
 		{
 			_plugin.Call( "getStatus", accountId );
