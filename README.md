@@ -327,4 +327,4 @@ Please review our [CONTRIBUTING.md](CONTRIBUTING.md) guide before opening issues
 
 
 ## License
-The kin-unity-plugin is licensed under [MIT license](LICENSE.md).
+The kin-unity-plugin is licensed under [Kin Ecosystem SDK License](LICENSE.pdf).
