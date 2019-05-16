@@ -14,7 +14,6 @@ import kin.sdk.ListenerRegistration;
 import kin.sdk.Transaction;
 import kin.sdk.TransactionId;
 import kin.sdk.exception.DeleteAccountException;
-import kin.sdk.exception.OperationFailedException;
 import kin.sdk.exception.CryptoException;
 import kin.sdk.Environment;
 
@@ -148,7 +147,7 @@ public class KinPlugin extends KinPluginBase
 			// attempt to delete the account
 			_clients.get( clientId ).deleteAccount( index );
 		}
-		catch( DeleteAccountException e )
+		catch( Exception e )
 		{
 			e.printStackTrace();
 			return exceptionToJson( e, null );
@@ -197,7 +196,7 @@ public class KinPlugin extends KinPluginBase
 		{
 			return _accounts.get( accountId ).export( passphrase );
 		}
-		catch( CryptoException e )
+		catch( Exception e )
 		{
 			e.printStackTrace();
 			return exceptionToJson( e, null );
@@ -213,7 +212,7 @@ public class KinPlugin extends KinPluginBase
 				int status = _accounts.get( accountId ).getStatusSync();
 				unitySendMessage( "GetStatusSucceeded", callbackToJson( String.valueOf( status ), accountId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "GetStatusFailed", exceptionToJson( e, accountId ) );
 				Log.e( TAG, "GetStatus failed", e );
@@ -230,7 +229,7 @@ public class KinPlugin extends KinPluginBase
 				Balance balance = _accounts.get( accountId ).getBalanceSync();
 				unitySendMessage( "GetBalanceSucceeded", callbackToJson( balance.value().toString(), accountId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "GetBalanceFailed", exceptionToJson( e, accountId ) );
 				Log.e( TAG, "GetBalance failed", e );
@@ -247,7 +246,7 @@ public class KinPlugin extends KinPluginBase
 				long fee = _clients.get( clientId ).getMinimumFeeSync();
 				unitySendMessage( "GetMinimumFeeSucceeded", callbackToJson( Long.toString( fee ), clientId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "GetMinimumFeeFailed", exceptionToJson( e, clientId ) );
 				Log.e( TAG, "GetMinimumFee failed", e );
@@ -271,7 +270,7 @@ public class KinPlugin extends KinPluginBase
 				_transactions.put( transaction.getId().id(), transaction );
 				unitySendMessage("BuildTransactionSucceeded", transactionToJson( transaction, accountId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "BuildTransactionFailed", exceptionToJson( e, accountId ) );
 				Log.e( TAG, "BuildTransaction failed", e );
@@ -291,7 +290,7 @@ public class KinPlugin extends KinPluginBase
 				TransactionId transactionId = _accounts.get( accountId ).sendTransactionSync( transaction );
 				unitySendMessage("SendTransactionSucceeded", callbackToJson( transactionId.id(), accountId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "SendTransactionFailed", exceptionToJson( e, accountId ) );
 				Log.e( TAG, "SendTransaction failed", e );
@@ -311,7 +310,7 @@ public class KinPlugin extends KinPluginBase
 				TransactionId transactionId = _accounts.get( accountId ).sendWhitelistTransactionSync( whitelist );
 				unitySendMessage("SendTransactionSucceeded", callbackToJson( transactionId.id(), accountId ) );
 			}
-			catch( OperationFailedException e )
+			catch( Exception e )
 			{
 				unitySendMessage( "SendTransactionFailed", exceptionToJson( e, accountId ) );
 				Log.e( TAG, "SendTransaction failed", e );
