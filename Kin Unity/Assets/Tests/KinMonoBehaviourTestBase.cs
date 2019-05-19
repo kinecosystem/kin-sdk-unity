@@ -131,8 +131,23 @@ public abstract class KinMonoBehaviourTestBase : MonoBehaviour, IMonoBehaviourTe
 		yield return new WaitUntil( () => hasResult );
 	}
 
+    protected IEnumerator BuildTransactionFail()
+    {
+        var hasResult = false;
+        _account.BuildTransaction(_sendToAddress, -50, _feeAmount, (ex, transaction) =>
+        {
+            Assert.IsNotNull(ex);
+            Assert.IsTrue(ex.NativeType.Equals("IllegalArgumentException")); // todo: check exception name for iOS here as well
+            Assert.IsNull(transaction);
+            _transaction = transaction;
+            hasResult = true;
+        });
 
-	protected IEnumerator BuildTransactionWithMemo( decimal kinAmount, string memo )
+        yield return new WaitUntil(() => hasResult);
+    }
+
+
+    protected IEnumerator BuildTransactionWithMemo( decimal kinAmount, string memo )
 	{
 		var hasResult = false;
 		_account.BuildTransaction( _sendToAddress, kinAmount, _feeAmount, memo, ( ex, transaction ) =>
