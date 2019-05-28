@@ -1,21 +1,25 @@
 package kin.unity;
 
 
+import android.app.Activity;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 
+import kin.backupandrestore.BackupCallback;
+import kin.backupandrestore.RestoreCallback;
+import kin.backupandrestore.exception.BackupAndRestoreException;
 import kin.sdk.Balance;
 import kin.sdk.KinAccount;
 import kin.sdk.KinClient;
 import kin.sdk.ListenerRegistration;
 import kin.sdk.Transaction;
 import kin.sdk.TransactionId;
-import kin.sdk.exception.DeleteAccountException;
-import kin.sdk.exception.CryptoException;
 import kin.sdk.Environment;
+import kin.backupandrestore.BackupAndRestoreManager;
 
 
 @SuppressWarnings("unused")
@@ -27,11 +31,17 @@ public class KinPlugin extends KinPluginBase
 	private HashMap<String,KinClient> _clients = new HashMap<>();
 	private HashMap<String,KinAccount> _accounts = new HashMap<>();
 	private HashMap<String,Transaction> _transactions = new HashMap<>();
+	protected HashMap<String,BackupAndRestoreManager> _backupManagers = new HashMap<>();
 
 	// ListenerRegistration cache
 	private HashMap<String,ListenerRegistration> _paymentListeners = new HashMap<>();
 	private HashMap<String,ListenerRegistration> _balanceListeners = new HashMap<>();
 	private HashMap<String,ListenerRegistration> _accountListeners = new HashMap<>();
+
+
+	protected static final String BACKUP_ACTION = "Backup";
+	protected static final String RESTORE_ACTION = "Restore";
+
 
 
 	public static KinPlugin instance()
@@ -379,6 +389,140 @@ public class KinPlugin extends KinPluginBase
 			_accountListeners.get( accountId ).remove();
 			_accountListeners.remove( accountId );
 		}
+	}
+
+	//endregion
+
+	//region KinBackupAndRestore
+
+	public String createBackupAndRestoreManager(String managerId)
+	{
+
+		try {
+			BackupAndRestoreManager backupManager = new BackupAndRestoreManager
+					(getActivity(),9000,9001);
+
+			backupManager.registerBackupCallback(new BackupCallback() {
+				@Override
+				public void onSuccess() {
+					unitySendMessage("onBackup", callbackToJson("", managerId));
+				}
+
+				@Override
+				public void onCancel() {
+					unitySendMessage("onBackup", callbackToJson("", managerId));
+				}
+
+				@Override
+				public void onFailure(BackupAndRestoreException e) {
+					unitySendMessage("onBackup", exceptionToJson(e, managerId));
+				}
+			});
+
+			backupManager.registerRestoreCallback(new RestoreCallback() {
+				@Override
+				public void onSuccess(KinClient kinClient, KinAccount kinAccount) {
+					String accountId = generateUniqueId();
+					_accounts.put(accountId, kinAccount);
+					unitySendMessage("onRestore", callbackToJson(accountId, managerId));
+				}
+
+				@Override
+				public void onCancel() {
+					unitySendMessage("onRestore", callbackToJson("", managerId));
+				}
+
+				@Override
+				public void onFailure(BackupAndRestoreException e) {
+					unitySendMessage("onRestore", exceptionToJson(e, managerId));
+				}
+			});
+
+			_backupManagers.put(managerId, backupManager);
+
+			return "";
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.e( TAG, "createBackupAndRestoreManager failed", e );
+			return exceptionToJson(e, managerId);
+		}
+	}
+
+	protected void backupAccount(String accountId, String clientId, String managerId)
+	{
+		try
+		{
+			BackupAndRestoreManager manager = _backupManagers.get(managerId);
+			KinClient client = _clients.get(clientId);
+			KinAccount account = _accounts.get(accountId);
+
+			manager.backup(client, account);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.e( TAG, "backupAccount failed", e );
+			unitySendMessage("onBackup", exceptionToJson(e, managerId));
+		}
+	}
+
+	protected void restoreAccount(String clientId, String managerId)
+	{
+		try
+		{
+			BackupAndRestoreManager manager = _backupManagers.get(managerId);
+			KinClient client = _clients.get(clientId);
+
+			manager.restore(client);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.e( TAG, "restoreAccount failed", e );
+			unitySendMessage("onRestore", exceptionToJson(e, managerId));
+		}
+	}
+
+	public String releaseBackupManager(String managerId)
+	{
+		try
+		{
+			BackupAndRestoreManager manager = _backupManagers.get(managerId);
+			manager.release();
+
+			return "";
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.e( TAG, "releaseBackupManager failed", e );
+			return exceptionToJson(e, managerId);
+		}
+	}
+
+	public void startBackupActivity(String accountId, String clientId, String managerId)
+	{
+		Activity activity = getActivity();
+		Intent intent = new Intent(activity, BackupLauncher.class);
+		intent.setAction(BACKUP_ACTION);
+		intent.putExtra("accountId", accountId);
+		intent.putExtra("clientId", clientId);
+		intent.putExtra("managerId", managerId);
+
+		activity.startActivity(intent);
+	}
+
+	public void startRestoreActivity(String clientId, String managerId)
+	{
+		Activity activity = getActivity();
+		Intent intent = new Intent(activity, BackupLauncher.class);
+		intent.setAction(RESTORE_ACTION);
+		intent.putExtra("clientId", clientId);
+		intent.putExtra("managerId", managerId);
+
+		activity.startActivity(intent);
 	}
 
 	//endregion

@@ -10,7 +10,7 @@ namespace Kin
 	/// </summary>
 	public class KinAccount
 	{
-		readonly string _accountId;
+		readonly internal string _accountId;
 
 
 		internal KinAccount( string accountId )

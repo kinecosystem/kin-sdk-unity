@@ -9,7 +9,7 @@ namespace Kin
 	/// </summary>
 	public class KinClient
 	{
-		readonly string _clientId;
+		readonly internal string _clientId;
 
 
 		/// <summary>
@@ -136,5 +136,5 @@ namespace Kin
 			NativeBridge.Get().GetMinimumFee( _clientId );
 		}
 
-	}
+    }
 }

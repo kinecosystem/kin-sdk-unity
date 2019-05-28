@@ -43,5 +43,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.kinecosystem:kin-sdk-android:1.0.3.1'
+    implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:epic_backup_and_restore_module-SNAPSHOT'
 }
+

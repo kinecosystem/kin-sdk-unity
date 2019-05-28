@@ -30,7 +30,10 @@ namespace Kin
 		internal static Dictionary<string, Action<KinException, string>> onSendTransaction = new Dictionary<string, Action<KinException, string>>();
 		internal static Dictionary<string, Action<KinException, Transaction>> onBuildTransaction = new Dictionary<string, Action<KinException, Transaction>>();
 
-		internal static KinManager Manager;
+        internal static Dictionary<string, Action<KinException, BackupRestoreResult>> onBackup = new Dictionary<string, Action<KinException, BackupRestoreResult>>();
+        internal static Dictionary<string, Action<KinException, BackupRestoreResult, KinAccount>> onRestore = new Dictionary<string, Action<KinException, BackupRestoreResult ,KinAccount>>();
+
+        internal static KinManager Manager;
 		Queue<Action> _actionQueue = new Queue<Action>();
 		
 
@@ -173,12 +176,61 @@ namespace Kin
 			onSendTransaction.FireActionInDict( ex.AccountId, ex, null );
 		}
 
-		#endregion
+        #endregion
+
+        #region KinBackupAndRestoreManager callbacks
+
+        void BackupSucceeded( string json )
+        {
+            // param.AccountId is actually the managerId
+            // #TODO: Change "AccountId" naming to "CallerId"
+            var param = JsonUtility.FromJson<CallbackParam>(json);
+            onBackup.FireActionInDict(param.AccountId, null, BackupRestoreResult.Success);
+        }
 
 
-		#region Listener callbacks
+        void BackupCanceled( string json )
+        {
+            var param = JsonUtility.FromJson<CallbackParam>(json);
+            onBackup.FireActionInDict(param.AccountId, null, BackupRestoreResult.Cancel);
+        }
 
-		void OnPayment( string json )
+
+        void BackupFailed( string json )
+        {
+            var ex = KinException.FromNativeErrorJson(json);
+            onBackup.FireActionInDict(ex.AccountId, ex, BackupRestoreResult.Failed);
+        }
+
+
+        void RestoreSucceeded( string json )
+        {
+            var param = JsonUtility.FromJson<CallbackParam>(json);
+            // param.Value is the accountId
+            KinAccount restoredAccount = new KinAccount(param.Value);
+            onRestore.FireActionInDict(param.AccountId, null, BackupRestoreResult.Success, restoredAccount);
+        }
+
+
+        void RestoreCanceled( string json )
+        {
+            var param = JsonUtility.FromJson<CallbackParam>(json);
+            onRestore.FireActionInDict(param.AccountId, null, BackupRestoreResult.Cancel, null);
+        }
+
+
+        void RestoreFailed( string json )
+        {
+            var ex = KinException.FromNativeErrorJson(json);
+            onRestore.FireActionInDict(ex.AccountId, ex, BackupRestoreResult.Failed, null);
+        }
+
+        #endregion
+
+
+        #region Listener callbacks
+
+        void OnPayment( string json )
 		{
 			var paymentInfo = JsonUtility.FromJson<PaymentInfo>( json );
 			if( paymentListeners.ContainsKey( paymentInfo.AccountId ) )
@@ -210,7 +262,12 @@ namespace Kin
 			}
 		}
 
-		#endregion
+        void testsomething( string blabla )
+        {
+            Debug.Log("Hello i got your message mate");
+        }
 
-	}
+        #endregion
+
+    }
 }

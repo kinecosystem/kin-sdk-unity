@@ -63,6 +63,18 @@ namespace Kin
 
 		void RemoveAccountCreationListener( string accountId );
 
-		#endregion
-	}
+        #endregion
+
+        #region KinBackupAndRestoreManager
+
+        string CreateBackupAndRestoreManager( string managerId );
+
+        void BackupAccount( string accountId, string clientId, string mangerId );
+
+        void RestoreAccount( string clientId, string managerId );
+
+        string ReleaseBackupManager( string managerId );
+
+        #endregion
+    }
 }

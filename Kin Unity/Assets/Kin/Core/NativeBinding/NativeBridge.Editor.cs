@@ -3,130 +3,147 @@
 
 namespace Kin
 {
-	/// <summary>
-	/// empty implemention of the INativeBridge interface for use in the editor and on unsupported platforms.
-	/// </summary>
-	class NativeBridgeEditor : INativeBridge
-	{
-		/// <summary>
-		/// no need to bother caching this in the editor so we just return a new one each time
-		/// </summary>
-		/// <value>The instance.</value>
-		static internal INativeBridge Instance { get { return new NativeBridgeEditor(); } }
+    /// <summary>
+    /// empty implemention of the INativeBridge interface for use in the editor and on unsupported platforms.
+    /// </summary>
+    class NativeBridgeEditor : INativeBridge
+    {
+        /// <summary>
+        /// no need to bother caching this in the editor so we just return a new one each time
+        /// </summary>
+        /// <value>The instance.</value>
+        static internal INativeBridge Instance { get { return new NativeBridgeEditor(); } }
 
 
-		#region KinClient
+        #region KinClient
 
-		public void CreateClient( string clientId, Environment environment, string apiKey, string storeKey = null )
-		{}
-
-
-		public void FreeCachedClient( string clientId )
-		{}
+        public void CreateClient(string clientId, Environment environment, string apiKey, string storeKey = null)
+        { }
 
 
-		public string ImportAccount( string clientId, string accountId, string exportedJson, string passphrase )
-		{
-			return null;
-		}
+        public void FreeCachedClient(string clientId)
+        { }
 
 
-		public int GetAccountCount( string clientId )
-		{
-			return 0;
-		}
+        public string ImportAccount(string clientId, string accountId, string exportedJson, string passphrase)
+        {
+            return null;
+        }
 
 
-		public string AddAccount( string clientId, string accountId )
-		{
-			return null;
-		}
+        public int GetAccountCount(string clientId)
+        {
+            return 0;
+        }
 
 
-		public bool GetAccount( string clientId, string accountId, int index )
-		{
-			return false;
-		}
+        public string AddAccount(string clientId, string accountId)
+        {
+            return null;
+        }
 
 
-		public string DeleteAccount( string clientId, int index )
-		{
-			return null;
-		}
+        public bool GetAccount(string clientId, string accountId, int index)
+        {
+            return false;
+        }
 
 
-		public void ClearAllAccounts( string clientId )
-		{ }
+        public string DeleteAccount(string clientId, int index)
+        {
+            return null;
+        }
 
 
-		public void GetMinimumFee( string clientId )
-		{}
-
-		#endregion
+        public void ClearAllAccounts(string clientId)
+        { }
 
 
-		#region KinAccount
+        public void GetMinimumFee(string clientId)
+        { }
 
-		public void FreeCachedAccount( string accountId )
-		{}
-
-
-		public string GetPublicAddress( string accountId )
-		{
-			return null;
-		}
+        #endregion
 
 
-		public string Export( string accountId, string passphrase )
-		{
-			return "{}";
-		}
+        #region KinAccount
+
+        public void FreeCachedAccount(string accountId)
+        { }
 
 
-		public void GetStatus( string accountId )
-		{}
+        public string GetPublicAddress(string accountId)
+        {
+            return null;
+        }
 
 
-		public void GetBalance( string accountId )
-		{}
+        public string Export(string accountId, string passphrase)
+        {
+            return "{}";
+        }
 
 
-		public void BuildTransaction( string accountId, string toAddress, string kinAmount, int fee, string memo = null )
-		{}
+        public void GetStatus(string accountId)
+        { }
 
 
-		public void SendTransaction( string accountId, string transactionId )
-		{}
+        public void GetBalance(string accountId)
+        { }
 
 
-		public void SendWhitelistTransaction( string accountId, string transactionId, string whitelist )
-		{}
+        public void BuildTransaction(string accountId, string toAddress, string kinAmount, int fee, string memo = null)
+        { }
 
 
-		public void AddPaymentListener( string accountId )
-		{}
+        public void SendTransaction(string accountId, string transactionId)
+        { }
 
 
-		public void RemovePaymentListener( string accountId )
-		{}
+        public void SendWhitelistTransaction(string accountId, string transactionId, string whitelist)
+        { }
 
 
-		public void AddBalanceListener( string accountId )
-		{}
+        public void AddPaymentListener(string accountId)
+        { }
 
 
-		public void RemoveBalanceListener( string accountId )
-		{}
+        public void RemovePaymentListener(string accountId)
+        { }
 
 
-		public void AddAccountCreationListener( string accountId )
-		{}
+        public void AddBalanceListener(string accountId)
+        { }
 
 
-		public void RemoveAccountCreationListener( string accountId )
-		{}
+        public void RemoveBalanceListener(string accountId)
+        { }
 
-		#endregion
 
-	}
+        public void AddAccountCreationListener(string accountId)
+        { }
+
+
+        public void RemoveAccountCreationListener(string accountId)
+        { }
+
+        #endregion
+
+        #region KinBackupAndRestoreManager
+
+        public string CreateBackupAndRestoreManager(string managerId)
+        { return ""; }
+
+        public void BackupAccount(string accountId, string clientId, string managerId)
+        { }
+
+        public void RestoreAccount(string clientId, string managerId)
+        { }
+
+        public string ReleaseBackupManager(string managerId)
+        { return ""; }
+    }
+
+
+
+    #endregion
 }
