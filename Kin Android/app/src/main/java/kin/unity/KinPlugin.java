@@ -8,10 +8,8 @@ import android.util.Log;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Map;
 
-import kin.backupandrestore.BackupCallback;
-import kin.backupandrestore.RestoreCallback;
-import kin.backupandrestore.exception.BackupAndRestoreException;
 import kin.sdk.Balance;
 import kin.sdk.KinAccount;
 import kin.sdk.KinClient;
@@ -19,162 +17,133 @@ import kin.sdk.ListenerRegistration;
 import kin.sdk.Transaction;
 import kin.sdk.TransactionId;
 import kin.sdk.Environment;
-import kin.backupandrestore.BackupAndRestoreManager;
 
 
 @SuppressWarnings("unused")
-public class KinPlugin extends KinPluginBase
-{
+public class KinPlugin extends KinPluginBase {
 	private static final KinPlugin _instance = new KinPlugin();
 
 	// cache for our native classes that are mirrored in C#
-	private HashMap<String,KinClient> _clients = new HashMap<>();
-	private HashMap<String,KinAccount> _accounts = new HashMap<>();
-	private HashMap<String,Transaction> _transactions = new HashMap<>();
-	protected HashMap<String,BackupAndRestoreManager> _backupManagers = new HashMap<>();
+	protected HashMap<String, KinClient> _clients = new HashMap<>();
+	protected HashMap<String, KinAccount> _accounts = new HashMap<>();
+	private HashMap<String, Transaction> _transactions = new HashMap<>();
 
 	// ListenerRegistration cache
-	private HashMap<String,ListenerRegistration> _paymentListeners = new HashMap<>();
-	private HashMap<String,ListenerRegistration> _balanceListeners = new HashMap<>();
-	private HashMap<String,ListenerRegistration> _accountListeners = new HashMap<>();
+	private HashMap<String, ListenerRegistration> _paymentListeners = new HashMap<>();
+	private HashMap<String, ListenerRegistration> _balanceListeners = new HashMap<>();
+	private HashMap<String, ListenerRegistration> _accountListeners = new HashMap<>();
 
-
+	// Codes for backup and restore
 	protected static final String BACKUP_ACTION = "Backup";
 	protected static final String RESTORE_ACTION = "Restore";
 
 
-
-	public static KinPlugin instance()
-	{
+	public static KinPlugin instance() {
 		return _instance;
 	}
 
 
 	//region KinClient
 
-	public void createClient( String clientId, int environment, String appId, String storeKey )
-	{
+	public void createClient(String clientId, int environment, String appId, String storeKey) {
 		// KinClient defaults to null so we do as well here
-		if( storeKey == null )
+		if (storeKey == null)
 			storeKey = "";
 
 		Environment env = environment == 0 ? Environment.TEST : Environment.PRODUCTION;
-		KinClient client = new KinClient( getActivity(), env, appId, storeKey );
-		_clients.put( clientId, client );
+		KinClient client = new KinClient(getActivity(), env, appId, storeKey);
+		_clients.put(clientId, client);
 	}
 
 
-	public KinClient _getClient( String clientId )
-	{
-		return _clients.get( clientId );
+	public KinClient _getClient(String clientId) {
+		return _clients.get(clientId);
 	}
 
 
-	public void freeCachedClient( String clientId )
-	{
-		if( _clients.containsKey( clientId ) )
-		{
-			Log.i( TAG, "freeing cached client: " + clientId );
-			_clients.remove( clientId );
+	public void freeCachedClient(String clientId) {
+		if (_clients.containsKey(clientId)) {
+			Log.i(TAG, "freeing cached client: " + clientId);
+			_clients.remove(clientId);
 		}
 	}
 
 
-	public String importAccount( String clientId, String accountId, String exportedJson, String passphrase )
-	{
-		try
-		{
-			KinAccount account = _clients.get( clientId ).importAccount( exportedJson, passphrase );
-			_accounts.put( accountId, account );
+	public String importAccount(String clientId, String accountId, String exportedJson, String passphrase) {
+		try {
+			KinAccount account = _clients.get(clientId).importAccount(exportedJson, passphrase);
+			_accounts.put(accountId, account);
 			return "";
-		}
-		catch( Exception e )
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
-			return exceptionToJson( e, null );
+			return exceptionToJson(e, null);
 		}
 	}
 
 
-	public int getAccountCount( String clientId )
-	{
-		return _clients.get( clientId ).getAccountCount();
+	public int getAccountCount(String clientId) {
+		return _clients.get(clientId).getAccountCount();
 	}
 
 
-	public String addAccount( String clientId, String accountId )
-	{
-		try
-		{
-			Log.i( TAG, "adding account: " + accountId );
-			KinAccount account = _clients.get( clientId ).addAccount();
-			Log.i( TAG, "added account successfully" );
-			_accounts.put( accountId, account );
-		}
-		catch( Exception e )
-		{
+	public String addAccount(String clientId, String accountId) {
+		try {
+			Log.i(TAG, "adding account: " + accountId);
+			KinAccount account = _clients.get(clientId).addAccount();
+			Log.i(TAG, "added account successfully");
+			_accounts.put(accountId, account);
+		} catch (Exception e) {
 			e.printStackTrace();
-			return exceptionToJson( e, null );
+			return exceptionToJson(e, null);
 		}
 
 		return "";
 	}
 
 
-	public boolean getAccount( String clientId, String accountId, int index )
-	{
-		KinAccount account = _clients.get( clientId ).getAccount( index );
-		if( account == null )
+	public boolean getAccount(String clientId, String accountId, int index) {
+		KinAccount account = _clients.get(clientId).getAccount(index);
+		if (account == null)
 			return false;
 
-		if( !_accounts.containsValue( account ) )
-			_accounts.put( accountId, account );
+		if (!_accounts.containsValue(account))
+			_accounts.put(accountId, account);
 
 		return true;
 	}
 
 
-	public KinAccount _getRawAccount( String clientId, int index )
-	{
-		return _clients.get( clientId ).getAccount( index );
+	public KinAccount _getRawAccount(String clientId, int index) {
+		return _clients.get(clientId).getAccount(index);
 	}
 
 
-	public String deleteAccount( String clientId, int index )
-	{
-		Log.i( TAG, "deleting account: " + index );
-		KinAccount account = _clients.get( clientId ).getAccount( index );
-		if( account == null )
-		{
-			Log.i( TAG, "could not find account to delete" );
+	public String deleteAccount(String clientId, int index) {
+		Log.i(TAG, "deleting account: " + index);
+		KinAccount account = _clients.get(clientId).getAccount(index);
+		if (account == null) {
+			Log.i(TAG, "could not find account to delete");
 			String message = "Attempted to delete account that doesn't exist at index " + index;
-			Log.e( TAG, message );
-			return exceptionToJson( new IndexOutOfBoundsException( message ), null );
+			Log.e(TAG, message);
+			return exceptionToJson(new IndexOutOfBoundsException(message), null);
 		}
 
-		try
-		{
+		try {
 			// attempt to delete the account
-			_clients.get( clientId ).deleteAccount( index );
-		}
-		catch( Exception e )
-		{
+			_clients.get(clientId).deleteAccount(index);
+		} catch (Exception e) {
 			e.printStackTrace();
-			return exceptionToJson( e, null );
+			return exceptionToJson(e, null);
 		}
 
 		return "";
 	}
 
 
-	public void clearAllAccounts( String clientId )
-	{
-		try
-		{
-			_clients.get( clientId ).clearAllAccounts();
-		}
-		catch( Exception e )
-		{
+	public void clearAllAccounts(String clientId) {
+		try {
+			_clients.get(clientId).clearAllAccounts();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -184,210 +153,170 @@ public class KinPlugin extends KinPluginBase
 
 	//region KinAccount
 
-	public void freeCachedAccount( final String accountId )
-	{
-		if( _accounts.containsKey( accountId ) )
-		{
-			Log.i( TAG, "freeing cached account: " + accountId );
-			_accounts.remove( accountId );
+	public void freeCachedAccount(final String accountId) {
+		if (_accounts.containsKey(accountId)) {
+			Log.i(TAG, "freeing cached account: " + accountId);
+			_accounts.remove(accountId);
 		}
 	}
 
 
-	public String getPublicAddress( final String accountId )
-	{
-		return _accounts.get( accountId ).getPublicAddress();
+	public String getPublicAddress(final String accountId) {
+		return _accounts.get(accountId).getPublicAddress();
 	}
 
 
-	public String export( final String accountId, final String passphrase )
-	{
-		try
-		{
-			return _accounts.get( accountId ).export( passphrase );
-		}
-		catch( Exception e )
-		{
+	public String export(final String accountId, final String passphrase) {
+		try {
+			return _accounts.get(accountId).export(passphrase);
+		} catch (Exception e) {
 			e.printStackTrace();
-			return exceptionToJson( e, null );
+			return exceptionToJson(e, null);
 		}
 	}
 
 
-	public void getStatus( final String accountId )
-	{
-		new Thread( () -> {
-			try
-			{
-				int status = _accounts.get( accountId ).getStatusSync();
-				unitySendMessage( "GetStatusSucceeded", callbackToJson( String.valueOf( status ), accountId ) );
+	public void getStatus(final String accountId) {
+		new Thread(() -> {
+			try {
+				int status = _accounts.get(accountId).getStatusSync();
+				unitySendMessage("GetStatusSucceeded", callbackToJson(String.valueOf(status), accountId));
+			} catch (Exception e) {
+				unitySendMessage("GetStatusFailed", exceptionToJson(e, accountId));
+				Log.e(TAG, "GetStatus failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "GetStatusFailed", exceptionToJson( e, accountId ) );
-				Log.e( TAG, "GetStatus failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void getBalance( final String accountId )
-	{
-		new Thread( () -> {
-			try
-			{
-				Balance balance = _accounts.get( accountId ).getBalanceSync();
-				unitySendMessage( "GetBalanceSucceeded", callbackToJson( balance.value().toString(), accountId ) );
+	public void getBalance(final String accountId) {
+		new Thread(() -> {
+			try {
+				Balance balance = _accounts.get(accountId).getBalanceSync();
+				unitySendMessage("GetBalanceSucceeded", callbackToJson(balance.value().toString(), accountId));
+			} catch (Exception e) {
+				unitySendMessage("GetBalanceFailed", exceptionToJson(e, accountId));
+				Log.e(TAG, "GetBalance failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "GetBalanceFailed", exceptionToJson( e, accountId ) );
-				Log.e( TAG, "GetBalance failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void getMinimumFee( final String clientId )
-	{
-		new Thread( () -> {
-			try
-			{
-				long fee = _clients.get( clientId ).getMinimumFeeSync();
-				unitySendMessage( "GetMinimumFeeSucceeded", callbackToJson( Long.toString( fee ), clientId ) );
+	public void getMinimumFee(final String clientId) {
+		new Thread(() -> {
+			try {
+				long fee = _clients.get(clientId).getMinimumFeeSync();
+				unitySendMessage("GetMinimumFeeSucceeded", callbackToJson(Long.toString(fee), clientId));
+			} catch (Exception e) {
+				unitySendMessage("GetMinimumFeeFailed", exceptionToJson(e, clientId));
+				Log.e(TAG, "GetMinimumFee failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "GetMinimumFeeFailed", exceptionToJson( e, clientId ) );
-				Log.e( TAG, "GetMinimumFee failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void buildTransaction( final String accountId, final String toAddress, final String kinAmount, final int fee, final String memo )
-	{
-		new Thread( () -> {
-			try
-			{
-				Log.i( TAG, "Preparing to build transaction. toAddress: " + toAddress + ", memo: " + memo );
+	public void buildTransaction(final String accountId, final String toAddress, final String kinAmount, final int fee, final String memo) {
+		new Thread(() -> {
+			try {
+				Log.i(TAG, "Preparing to build transaction. toAddress: " + toAddress + ", memo: " + memo);
 				Transaction transaction;
-				if( TextUtils.isEmpty( memo ) )
-					transaction = _accounts.get( accountId ).buildTransactionSync( toAddress, new BigDecimal( kinAmount ), fee );
+				if (TextUtils.isEmpty(memo))
+					transaction = _accounts.get(accountId).buildTransactionSync(toAddress, new BigDecimal(kinAmount), fee);
 				else
-					transaction = _accounts.get( accountId ).buildTransactionSync( toAddress, new BigDecimal( kinAmount ), fee, memo );
+					transaction = _accounts.get(accountId).buildTransactionSync(toAddress, new BigDecimal(kinAmount), fee, memo);
 
-				_transactions.put( transaction.getId().id(), transaction );
-				unitySendMessage("BuildTransactionSucceeded", transactionToJson( transaction, accountId ) );
+				_transactions.put(transaction.getId().id(), transaction);
+				unitySendMessage("BuildTransactionSucceeded", transactionToJson(transaction, accountId));
+			} catch (Exception e) {
+				unitySendMessage("BuildTransactionFailed", exceptionToJson(e, accountId));
+				Log.e(TAG, "BuildTransaction failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "BuildTransactionFailed", exceptionToJson( e, accountId ) );
-				Log.e( TAG, "BuildTransaction failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void sendTransaction( final String accountId, final String id )
-	{
-		new Thread( () -> {
-			try
-			{
-				Transaction transaction = _transactions.remove( id );
-				Log.i( TAG, "Preparing to send transaction: " + transaction.getDestination().getAccountId() );
+	public void sendTransaction(final String accountId, final String id) {
+		new Thread(() -> {
+			try {
+				Transaction transaction = _transactions.remove(id);
+				Log.i(TAG, "Preparing to send transaction: " + transaction.getDestination().getAccountId());
 
-				TransactionId transactionId = _accounts.get( accountId ).sendTransactionSync( transaction );
-				unitySendMessage("SendTransactionSucceeded", callbackToJson( transactionId.id(), accountId ) );
+				TransactionId transactionId = _accounts.get(accountId).sendTransactionSync(transaction);
+				unitySendMessage("SendTransactionSucceeded", callbackToJson(transactionId.id(), accountId));
+			} catch (Exception e) {
+				unitySendMessage("SendTransactionFailed", exceptionToJson(e, accountId));
+				Log.e(TAG, "SendTransaction failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "SendTransactionFailed", exceptionToJson( e, accountId ) );
-				Log.e( TAG, "SendTransaction failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void sendWhitelistTransaction( final String accountId, final String id, final String whitelist )
-	{
-		new Thread( () -> {
-			try
-			{
-				Transaction transaction = _transactions.remove( id );
-				Log.i( TAG, "Preparing to send transaction: " + transaction.getDestination().getAccountId() );
+	public void sendWhitelistTransaction(final String accountId, final String id, final String whitelist) {
+		new Thread(() -> {
+			try {
+				Transaction transaction = _transactions.remove(id);
+				Log.i(TAG, "Preparing to send transaction: " + transaction.getDestination().getAccountId());
 
-				TransactionId transactionId = _accounts.get( accountId ).sendWhitelistTransactionSync( whitelist );
-				unitySendMessage("SendTransactionSucceeded", callbackToJson( transactionId.id(), accountId ) );
+				TransactionId transactionId = _accounts.get(accountId).sendWhitelistTransactionSync(whitelist);
+				unitySendMessage("SendTransactionSucceeded", callbackToJson(transactionId.id(), accountId));
+			} catch (Exception e) {
+				unitySendMessage("SendTransactionFailed", exceptionToJson(e, accountId));
+				Log.e(TAG, "SendTransaction failed", e);
 			}
-			catch( Exception e )
-			{
-				unitySendMessage( "SendTransactionFailed", exceptionToJson( e, accountId ) );
-				Log.e( TAG, "SendTransaction failed", e );
-			}
-		} ).start();
+		}).start();
 	}
 
 
-	public void addPaymentListener( final String accountId )
-	{
+	public void addPaymentListener(final String accountId) {
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
-		if( _paymentListeners.containsKey( accountId ) )
+		if (_paymentListeners.containsKey(accountId))
 			return;
 
-		ListenerRegistration registration = _accounts.get( accountId ).addPaymentListener( paymentInfo -> unitySendMessage( "OnPayment", paymentInfoToJson( paymentInfo, accountId ) ) );
-		_paymentListeners.put( accountId, registration );
+		ListenerRegistration registration = _accounts.get(accountId).addPaymentListener(paymentInfo -> unitySendMessage("OnPayment", paymentInfoToJson(paymentInfo, accountId)));
+		_paymentListeners.put(accountId, registration);
 	}
 
 
-	public void removePaymentListener( String accountId )
-	{
-		if( _paymentListeners.containsKey( accountId ) )
-		{
-			_paymentListeners.get( accountId ).remove();
-			_paymentListeners.remove( accountId );
+	public void removePaymentListener(String accountId) {
+		if (_paymentListeners.containsKey(accountId)) {
+			_paymentListeners.get(accountId).remove();
+			_paymentListeners.remove(accountId);
 		}
 	}
 
 
-	public void addBalanceListener( final String accountId )
-	{
+	public void addBalanceListener(final String accountId) {
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
-		if( _balanceListeners.containsKey( accountId ) )
+		if (_balanceListeners.containsKey(accountId))
 			return;
 
-		ListenerRegistration registration = _accounts.get( accountId ).addBalanceListener( balance -> unitySendMessage( "OnBalance", callbackToJson( balance.value().toString(), accountId ) ) );
-		_balanceListeners.put( accountId, registration );
+		ListenerRegistration registration = _accounts.get(accountId).addBalanceListener(balance -> unitySendMessage("OnBalance", callbackToJson(balance.value().toString(), accountId)));
+		_balanceListeners.put(accountId, registration);
 	}
 
 
-	public void removeBalanceListener( String accountId )
-	{
-		if( _balanceListeners.containsKey( accountId ) )
-		{
-			_balanceListeners.get( accountId ).remove();
-			_balanceListeners.remove( accountId );
+	public void removeBalanceListener(String accountId) {
+		if (_balanceListeners.containsKey(accountId)) {
+			_balanceListeners.get(accountId).remove();
+			_balanceListeners.remove(accountId);
 		}
 	}
 
 
-	public void addAccountCreationListener( final String accountId )
-	{
+	public void addAccountCreationListener(final String accountId) {
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
-		if( _accountListeners.containsKey( accountId ) )
+		if (_accountListeners.containsKey(accountId))
 			return;
 
-		ListenerRegistration registration = _accounts.get( accountId ).addAccountCreationListener( data -> unitySendMessage( "OnAccountCreated", accountId ) );
-		_accountListeners.put( accountId, registration );
+		ListenerRegistration registration = _accounts.get(accountId).addAccountCreationListener(data -> unitySendMessage("OnAccountCreated", accountId));
+		_accountListeners.put(accountId, registration);
 	}
 
 
-	public void removeAccountCreationListener( String accountId )
-	{
-		if( _accountListeners.containsKey( accountId ) )
-		{
-			_accountListeners.get( accountId ).remove();
-			_accountListeners.remove( accountId );
+	public void removeAccountCreationListener(String accountId) {
+		if (_accountListeners.containsKey(accountId)) {
+			_accountListeners.get(accountId).remove();
+			_accountListeners.remove(accountId);
 		}
 	}
 
@@ -395,136 +324,39 @@ public class KinPlugin extends KinPluginBase
 
 	//region KinBackupAndRestore
 
-	public String createBackupAndRestoreManager(String managerId)
-	{
-
-		try {
-			BackupAndRestoreManager backupManager = new BackupAndRestoreManager
-					(getActivity(),9000,9001);
-
-			backupManager.registerBackupCallback(new BackupCallback() {
-				@Override
-				public void onSuccess() {
-					unitySendMessage("onBackup", callbackToJson("", managerId));
-				}
-
-				@Override
-				public void onCancel() {
-					unitySendMessage("onBackup", callbackToJson("", managerId));
-				}
-
-				@Override
-				public void onFailure(BackupAndRestoreException e) {
-					unitySendMessage("onBackup", exceptionToJson(e, managerId));
-				}
-			});
-
-			backupManager.registerRestoreCallback(new RestoreCallback() {
-				@Override
-				public void onSuccess(KinClient kinClient, KinAccount kinAccount) {
-					String accountId = generateUniqueId();
-					_accounts.put(accountId, kinAccount);
-					unitySendMessage("onRestore", callbackToJson(accountId, managerId));
-				}
-
-				@Override
-				public void onCancel() {
-					unitySendMessage("onRestore", callbackToJson("", managerId));
-				}
-
-				@Override
-				public void onFailure(BackupAndRestoreException e) {
-					unitySendMessage("onRestore", exceptionToJson(e, managerId));
-				}
-			});
-
-			_backupManagers.put(managerId, backupManager);
-
-			return "";
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			Log.e( TAG, "createBackupAndRestoreManager failed", e );
-			return exceptionToJson(e, managerId);
-		}
-	}
-
-	protected void backupAccount(String accountId, String clientId, String managerId)
-	{
-		try
-		{
-			BackupAndRestoreManager manager = _backupManagers.get(managerId);
-			KinClient client = _clients.get(clientId);
-			KinAccount account = _accounts.get(accountId);
-
-			manager.backup(client, account);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			Log.e( TAG, "backupAccount failed", e );
-			unitySendMessage("onBackup", exceptionToJson(e, managerId));
-		}
-	}
-
-	protected void restoreAccount(String clientId, String managerId)
-	{
-		try
-		{
-			BackupAndRestoreManager manager = _backupManagers.get(managerId);
-			KinClient client = _clients.get(clientId);
-
-			manager.restore(client);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			Log.e( TAG, "restoreAccount failed", e );
-			unitySendMessage("onRestore", exceptionToJson(e, managerId));
-		}
-	}
-
-	public String releaseBackupManager(String managerId)
-	{
-		try
-		{
-			BackupAndRestoreManager manager = _backupManagers.get(managerId);
-			manager.release();
-
-			return "";
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			Log.e( TAG, "releaseBackupManager failed", e );
-			return exceptionToJson(e, managerId);
-		}
-	}
-
-	public void startBackupActivity(String accountId, String clientId, String managerId)
-	{
+	public void startBackupActivity(String accountId, String clientId) {
 		Activity activity = getActivity();
-		Intent intent = new Intent(activity, BackupLauncher.class);
+		Intent intent = new Intent(activity, BackupActivity.class);
 		intent.setAction(BACKUP_ACTION);
 		intent.putExtra("accountId", accountId);
 		intent.putExtra("clientId", clientId);
-		intent.putExtra("managerId", managerId);
 
 		activity.startActivity(intent);
 	}
 
-	public void startRestoreActivity(String clientId, String managerId)
-	{
+	public void startRestoreActivity(String clientId) {
 		Activity activity = getActivity();
-		Intent intent = new Intent(activity, BackupLauncher.class);
+		Intent intent = new Intent(activity, BackupActivity.class);
 		intent.setAction(RESTORE_ACTION);
 		intent.putExtra("clientId", clientId);
-		intent.putExtra("managerId", managerId);
 
 		activity.startActivity(intent);
 	}
-
 	//endregion
 
+
+	/**
+	 * Gets the id of the first account that equals to the given account
+	 * (There should only be one in any case)
+	 */
+	protected String getAccountIdByAccount(KinAccount kinAccount) {
+		String accountId = null;
+		for (Map.Entry<String, KinAccount> pair : _accounts.entrySet()) {
+			if (kinAccount.equals(pair.getValue())) {
+				accountId = pair.getKey();
+				break;
+			}
+		}
+		return accountId;
+	}
 }

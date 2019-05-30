@@ -26,7 +26,8 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:epic_backup_and_restore_module-SNAPSHOT'
+        implementation 'com.github.kinecosystem.kin-sdk-android:kin-sdk-lib:master-SNAPSHOT'
+        implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:master-SNAPSHOT'
 **DEPS**}
 
 android {

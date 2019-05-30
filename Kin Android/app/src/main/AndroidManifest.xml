@@ -3,7 +3,7 @@
     package="com.kin.unityplugin">
 
     <application>
-        <activity android:name="kin.unity.BackupLauncher"
+        <activity android:name="kin.unity.BackupActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
     </application>
 

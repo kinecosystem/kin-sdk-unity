@@ -226,5 +226,20 @@ namespace Kin
 			KinManager.accountCreationListeners.RemoveIfPresent( _accountId, listener );
 			NativeBridge.Get().RemoveAccountCreationListener( _accountId );
 		}
-	}
+
+        /// <summary>
+        /// backup an account which can be restored later
+        /// </summary>
+        /// <param name="kinClient"></param>
+        /// <param name="onComplete"></param>
+        /// <returns></returns>
+        public void BackupAccount(KinClient kinClient, Action<KinException, BackupRestoreResult> onComplete)
+        {
+            if (KinManager.onBackup.ContainsKey(_accountId))
+                throw new KinException("KinBackupAndRestoreManager request already in flight for this method. Wait for it to complete before requesting it again.");
+            KinManager.onBackup[_accountId] = onComplete;
+
+            NativeBridge.Get().BackupAccount(_accountId, kinClient._clientId);
+        }
+    }
 }

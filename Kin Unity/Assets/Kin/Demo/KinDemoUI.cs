@@ -12,7 +12,6 @@ namespace Kin
 		KinClient _client;
 		KinAccount _account;
 		Transaction _transaction;
-        KinBackupAndRestoreManager _backupManager;
 		int _feeAmount = 100;
 
 		string _sendToAddress = "GCV7RE24EL2LO2QPONLL4NGTPJUK326ZAWP4NZHCQ5CKE73IWSMM7QXG";
@@ -124,8 +123,37 @@ namespace Kin
 					addListeners();
 			}
 
+            if (GUILayout.Button("Restore Account"))
+            {
+                _client.RestoreAccount(
+                (KinException ex, BackupRestoreResult result, KinAccount account) => {
+                    switch (result)
+                    {
+                        case BackupRestoreResult.Success:
+                            Debug.Log("Account successfully restored");
+                            // Remove listeners from the currnet account
+                            removeListeners();
 
-			if( _account == null )
+                            _account = account;
+                            // Add listeners to the new account
+                            addListeners();
+                            _account.GetStatus((KinException error, AccountStatus status) =>
+                            {
+                                _isAccountCreated = status == AccountStatus.Created;
+                            });
+                            break;
+                        case BackupRestoreResult.Cancel:
+                            Debug.Log("Account restoration canceled");
+                            break;
+                        case BackupRestoreResult.Failed:
+                            Debug.Log("Account restoration failed");
+                            Debug.LogError(ex);
+                            break;
+                    }
+                });
+            }
+
+            if ( _account == null )
 				return;
 
 
@@ -142,49 +170,6 @@ namespace Kin
 					return;
 				}
 			}
-
-            if (GUILayout.Button("Create Backup Manager"))
-            {
-                try
-                {
-                    _backupManager = new KinBackupAndRestoreManager();
-                }
-                catch (KinException e)
-                {
-                    Debug.LogError("error creating backup manager: " + e);
-                    return;
-                }
-            }
-
-            if (_backupManager == null)
-                return;
-
-            if (GUILayout.Button("Restore Account"))
-            {
-                _backupManager.Restore(_client,
-                (KinException ex, BackupRestoreResult result, KinAccount account) => {
-                    switch (result)
-                    {
-                        case BackupRestoreResult.Success:
-                            Debug.Log("Account successfully restored");
-                            _account = account;
-                            _transaction = null;
-                            addListeners();
-                            _account.GetStatus((KinException error, AccountStatus status) => 
-                            {
-                                _isAccountCreated = status == AccountStatus.Created;
-                            });
-                            break;
-                        case BackupRestoreResult.Cancel:
-                            Debug.Log("Account restoration canceled");
-                            break;
-                        case BackupRestoreResult.Failed:
-                            Debug.Log("Account restoration failed");
-                            Debug.LogError(ex);
-                            break;
-                    }
-                });
-            }
         }
 
 
@@ -311,12 +296,9 @@ namespace Kin
 				StartCoroutine( SendWhitelistTransaction() );
 			}
 
-            if (_backupManager == null)
-                return;
-
             if (GUILayout.Button("Backup Account"))
             {
-                _backupManager.Backup(_account, _client,
+                _account.BackupAccount(_client,
                 (KinException ex, BackupRestoreResult result) => {
                     switch (result)
                     {

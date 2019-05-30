@@ -62,6 +62,9 @@ namespace Kin
         public void GetMinimumFee(string clientId)
         { }
 
+        public void RestoreAccount(string clientId)
+        { }
+
         #endregion
 
 
@@ -126,24 +129,11 @@ namespace Kin
         public void RemoveAccountCreationListener(string accountId)
         { }
 
+        public void BackupAccount(string accountId, string clientId)
+        { }
+
         #endregion
 
-        #region KinBackupAndRestoreManager
-
-        public string CreateBackupAndRestoreManager(string managerId)
-        { return ""; }
-
-        public void BackupAccount(string accountId, string clientId, string managerId)
-        { }
-
-        public void RestoreAccount(string clientId, string managerId)
-        { }
-
-        public string ReleaseBackupManager(string managerId)
-        { return ""; }
     }
 
-
-
-    #endregion
 }

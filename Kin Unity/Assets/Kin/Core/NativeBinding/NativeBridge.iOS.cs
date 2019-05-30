@@ -92,6 +92,12 @@ namespace Kin
 			_kinGetMinimumFee( clientId );
 		}
 
+        [DllImport("__Internal")]
+        static extern void _kinRestoreAccount(string clientId);
+
+        public void RestoreAccount(string clientId)
+        { }
+
 #endregion
 
 
@@ -223,33 +229,13 @@ namespace Kin
 			_kinRemoveAccountCreationListener( accountId );
 		}
 
-        #endregion
-
-        #region KinBackupAndRestoreManager
-        //TODO
-
         [DllImport("__Internal")]
-        static extern string _kinCreateBackupAndRestoreManager(string managerId);
+        static extern void _kinBackupAccount(string accountId, string clientId);
 
-        public string CreateBackupAndRestoreManager(string managerId)
-        { return ""; }
-
-        [DllImport("__Internal")]
-        static extern void _kinBackupAccount(string accountId, string clientId, string managerId);
-
-        public void BackupAccount(string accountId, string clientId, string managerId)
+        public void BackupAccount(string accountId, string clientId)
         { }
 
-        [DllImport("__Internal")]
-        static extern void _kinRestoreAccount(string clientId, string managerId);
-
-        public void RestoreAccount(string clientId, string managerId)
-        { }
-
-        // There is no such method on the ios-sdk, but we need this method here for a unified interface
-        public string ReleaseBackupManager(string managerId)
-        { return ""; }
-        #endregion
+#endregion
 
     }
 }

@@ -182,7 +182,7 @@ namespace Kin
 
         void BackupSucceeded( string json )
         {
-            // param.AccountId is actually the managerId
+            // param.AccountId is actually the ClientId
             // #TODO: Change "AccountId" naming to "CallerId"
             var param = JsonUtility.FromJson<CallbackParam>(json);
             onBackup.FireActionInDict(param.AccountId, null, BackupRestoreResult.Success);
@@ -198,6 +198,7 @@ namespace Kin
 
         void BackupFailed( string json )
         {
+            Debug.Log("In backup failed");
             var ex = KinException.FromNativeErrorJson(json);
             onBackup.FireActionInDict(ex.AccountId, ex, BackupRestoreResult.Failed);
         }
@@ -261,11 +262,6 @@ namespace Kin
 					listener.OnEvent();
 			}
 		}
-
-        void testsomething( string blabla )
-        {
-            Debug.Log("Hello i got your message mate");
-        }
 
         #endregion
 

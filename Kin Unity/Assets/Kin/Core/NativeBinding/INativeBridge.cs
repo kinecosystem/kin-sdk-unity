@@ -30,12 +30,14 @@ namespace Kin
 
 		void GetMinimumFee( string clientId );
 
-		#endregion
+        void RestoreAccount(string clientId);
+
+        #endregion
 
 
-		#region KinAccount
+        #region KinAccount
 
-		void FreeCachedAccount( string accountId );
+        void FreeCachedAccount( string accountId );
 
 		string GetPublicAddress( string accountId );
 
@@ -63,18 +65,9 @@ namespace Kin
 
 		void RemoveAccountCreationListener( string accountId );
 
-        #endregion
-
-        #region KinBackupAndRestoreManager
-
-        string CreateBackupAndRestoreManager( string managerId );
-
-        void BackupAccount( string accountId, string clientId, string mangerId );
-
-        void RestoreAccount( string clientId, string managerId );
-
-        string ReleaseBackupManager( string managerId );
+        void BackupAccount(string accountId, string clientId);
 
         #endregion
+
     }
 }

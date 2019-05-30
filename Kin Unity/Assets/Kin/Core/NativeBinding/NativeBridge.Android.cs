@@ -77,10 +77,15 @@ namespace Kin
             _plugin.Call( "getMinimumFee", clientId );
         }
 
-#endregion
+        public void RestoreAccount(string clientId)
+        {
+            _plugin.Call("startRestoreActivity", clientId);
+        }
+
+        #endregion
 
 
-#region KinAccount
+        #region KinAccount
 
         public void FreeCachedAccount( string accountId )
         {
@@ -165,32 +170,13 @@ namespace Kin
             _plugin.Call( "removeAccountCreationListener", accountId );
         }
 
-        #endregion
-
-
-        #region KinBackupAndRestoreManager
-
-        public string CreateBackupAndRestoreManager( string managerId  )
+        public void BackupAccount(string accountId, string clientId)
         {
-            return _plugin.Call<string>("createBackupAndRestoreManager", managerId);
-        }
-
-        public void BackupAccount (string accountId, string clientId, string managerId)
-        {
-            _plugin.Call("startBackupActivity", accountId, clientId, managerId);
-        }
-
-        public void RestoreAccount ( string clientId, string managerId )
-        {
-            _plugin.Call("startRestoreActivity", clientId, managerId);
-        }
-
-        public string ReleaseBackupManager( string managerId )
-        {
-            return _plugin.Call<string>("releaseBackupManager", managerId);
+            _plugin.Call("startBackupActivity", accountId, clientId);
         }
 
         #endregion
+
 
     }
 }

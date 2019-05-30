@@ -136,5 +136,20 @@ namespace Kin
 			NativeBridge.Get().GetMinimumFee( _clientId );
 		}
 
+        /// <summary>
+        /// restore and account that was backed up
+        /// </summary>
+        /// <param name="onComplete"></param>
+        /// <returns></returns>
+        public void RestoreAccount(Action<KinException, BackupRestoreResult, KinAccount> onComplete)
+        {
+            if (KinManager.onRestore.ContainsKey(_clientId))
+                throw new KinException("KinClient request already in flight for this method. Wait for it to complete before requesting it again.");
+            KinManager.onRestore[_clientId] = onComplete;
+
+            NativeBridge.Get().RestoreAccount(_clientId);
+        }
+
+
     }
 }
