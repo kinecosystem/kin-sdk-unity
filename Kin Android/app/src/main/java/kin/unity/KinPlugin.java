@@ -45,7 +45,8 @@ public class KinPlugin extends KinPluginBase {
 
 	//region KinClient
 
-	public void createClient(String clientId, int environment, String appId, String storeKey) {
+	public void createClient(String clientId, int environment, String appId, String storeKey)
+	{
 		// KinClient defaults to null so we do as well here
 		if (storeKey == null)
 			storeKey = "";
@@ -56,20 +57,24 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public KinClient _getClient(String clientId) {
+	public KinClient _getClient(String clientId)
+	{
 		return _clients.get(clientId);
 	}
 
 
-	public void freeCachedClient(String clientId) {
-		if (_clients.containsKey(clientId)) {
+	public void freeCachedClient(String clientId)
+	{
+		if (_clients.containsKey(clientId))
+		{
 			Log.i(TAG, "freeing cached client: " + clientId);
 			_clients.remove(clientId);
 		}
 	}
 
 
-	public String importAccount(String clientId, String accountId, String exportedJson, String passphrase) {
+	public String importAccount(String clientId, String accountId, String exportedJson, String passphrase)
+	{
 		try {
 			KinAccount account = _clients.get(clientId).importAccount(exportedJson, passphrase);
 			_accounts.put(accountId, account);
@@ -86,7 +91,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public String addAccount(String clientId, String accountId) {
+	public String addAccount(String clientId, String accountId)
+	{
 		try {
 			Log.i(TAG, "adding account: " + accountId);
 			KinAccount account = _clients.get(clientId).addAccount();
@@ -101,7 +107,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public boolean getAccount(String clientId, String accountId, int index) {
+	public boolean getAccount(String clientId, String accountId, int index)
+	{
 		KinAccount account = _clients.get(clientId).getAccount(index);
 		if (account == null)
 			return false;
@@ -113,15 +120,18 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public KinAccount _getRawAccount(String clientId, int index) {
+	public KinAccount _getRawAccount(String clientId, int index)
+	{
 		return _clients.get(clientId).getAccount(index);
 	}
 
 
-	public String deleteAccount(String clientId, int index) {
+	public String deleteAccount(String clientId, int index)
+	{
 		Log.i(TAG, "deleting account: " + index);
 		KinAccount account = _clients.get(clientId).getAccount(index);
-		if (account == null) {
+		if (account == null)
+		{
 			Log.i(TAG, "could not find account to delete");
 			String message = "Attempted to delete account that doesn't exist at index " + index;
 			Log.e(TAG, message);
@@ -131,7 +141,8 @@ public class KinPlugin extends KinPluginBase {
 		try {
 			// attempt to delete the account
 			_clients.get(clientId).deleteAccount(index);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return exceptionToJson(e, null);
 		}
@@ -140,10 +151,13 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void clearAllAccounts(String clientId) {
+	public void clearAllAccounts(String clientId)
+	{
 		try {
 			_clients.get(clientId).clearAllAccounts();
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
@@ -153,35 +167,45 @@ public class KinPlugin extends KinPluginBase {
 
 	//region KinAccount
 
-	public void freeCachedAccount(final String accountId) {
-		if (_accounts.containsKey(accountId)) {
+	public void freeCachedAccount(final String accountId)
+	{
+		if (_accounts.containsKey(accountId))
+		{
 			Log.i(TAG, "freeing cached account: " + accountId);
 			_accounts.remove(accountId);
 		}
 	}
 
 
-	public String getPublicAddress(final String accountId) {
+	public String getPublicAddress(final String accountId)
+	{
 		return _accounts.get(accountId).getPublicAddress();
 	}
 
 
-	public String export(final String accountId, final String passphrase) {
-		try {
+	public String export(final String accountId, final String passphrase)
+	{
+		try
+		{
 			return _accounts.get(accountId).export(passphrase);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 			return exceptionToJson(e, null);
 		}
 	}
 
 
-	public void getStatus(final String accountId) {
+	public void getStatus(final String accountId)
+	{
 		new Thread(() -> {
 			try {
 				int status = _accounts.get(accountId).getStatusSync();
 				unitySendMessage("GetStatusSucceeded", callbackToJson(String.valueOf(status), accountId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("GetStatusFailed", exceptionToJson(e, accountId));
 				Log.e(TAG, "GetStatus failed", e);
 			}
@@ -189,12 +213,15 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void getBalance(final String accountId) {
+	public void getBalance(final String accountId)
+	{
 		new Thread(() -> {
 			try {
 				Balance balance = _accounts.get(accountId).getBalanceSync();
 				unitySendMessage("GetBalanceSucceeded", callbackToJson(balance.value().toString(), accountId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("GetBalanceFailed", exceptionToJson(e, accountId));
 				Log.e(TAG, "GetBalance failed", e);
 			}
@@ -202,12 +229,15 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void getMinimumFee(final String clientId) {
+	public void getMinimumFee(final String clientId)
+	{
 		new Thread(() -> {
 			try {
 				long fee = _clients.get(clientId).getMinimumFeeSync();
 				unitySendMessage("GetMinimumFeeSucceeded", callbackToJson(Long.toString(fee), clientId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("GetMinimumFeeFailed", exceptionToJson(e, clientId));
 				Log.e(TAG, "GetMinimumFee failed", e);
 			}
@@ -215,7 +245,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void buildTransaction(final String accountId, final String toAddress, final String kinAmount, final int fee, final String memo) {
+	public void buildTransaction(final String accountId, final String toAddress, final String kinAmount, final int fee, final String memo)
+	{
 		new Thread(() -> {
 			try {
 				Log.i(TAG, "Preparing to build transaction. toAddress: " + toAddress + ", memo: " + memo);
@@ -227,7 +258,9 @@ public class KinPlugin extends KinPluginBase {
 
 				_transactions.put(transaction.getId().id(), transaction);
 				unitySendMessage("BuildTransactionSucceeded", transactionToJson(transaction, accountId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("BuildTransactionFailed", exceptionToJson(e, accountId));
 				Log.e(TAG, "BuildTransaction failed", e);
 			}
@@ -235,7 +268,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void sendTransaction(final String accountId, final String id) {
+	public void sendTransaction(final String accountId, final String id)
+	{
 		new Thread(() -> {
 			try {
 				Transaction transaction = _transactions.remove(id);
@@ -243,7 +277,9 @@ public class KinPlugin extends KinPluginBase {
 
 				TransactionId transactionId = _accounts.get(accountId).sendTransactionSync(transaction);
 				unitySendMessage("SendTransactionSucceeded", callbackToJson(transactionId.id(), accountId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("SendTransactionFailed", exceptionToJson(e, accountId));
 				Log.e(TAG, "SendTransaction failed", e);
 			}
@@ -251,7 +287,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void sendWhitelistTransaction(final String accountId, final String id, final String whitelist) {
+	public void sendWhitelistTransaction(final String accountId, final String id, final String whitelist)
+	{
 		new Thread(() -> {
 			try {
 				Transaction transaction = _transactions.remove(id);
@@ -259,7 +296,9 @@ public class KinPlugin extends KinPluginBase {
 
 				TransactionId transactionId = _accounts.get(accountId).sendWhitelistTransactionSync(whitelist);
 				unitySendMessage("SendTransactionSucceeded", callbackToJson(transactionId.id(), accountId));
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				unitySendMessage("SendTransactionFailed", exceptionToJson(e, accountId));
 				Log.e(TAG, "SendTransaction failed", e);
 			}
@@ -267,7 +306,8 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void addPaymentListener(final String accountId) {
+	public void addPaymentListener(final String accountId)
+	{
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
 		if (_paymentListeners.containsKey(accountId))
 			return;
@@ -277,15 +317,18 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void removePaymentListener(String accountId) {
-		if (_paymentListeners.containsKey(accountId)) {
+	public void removePaymentListener(String accountId)
+	{
+		if (_paymentListeners.containsKey(accountId))
+		{
 			_paymentListeners.get(accountId).remove();
 			_paymentListeners.remove(accountId);
 		}
 	}
 
 
-	public void addBalanceListener(final String accountId) {
+	public void addBalanceListener(final String accountId)
+	{
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
 		if (_balanceListeners.containsKey(accountId))
 			return;
@@ -295,15 +338,18 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void removeBalanceListener(String accountId) {
-		if (_balanceListeners.containsKey(accountId)) {
+	public void removeBalanceListener(String accountId)
+	{
+		if (_balanceListeners.containsKey(accountId))
+		{
 			_balanceListeners.get(accountId).remove();
 			_balanceListeners.remove(accountId);
 		}
 	}
 
 
-	public void addAccountCreationListener(final String accountId) {
+	public void addAccountCreationListener(final String accountId)
+	{
 		// we only need one listener on the native side. Multiple listeners can be added on the Unity side.
 		if (_accountListeners.containsKey(accountId))
 			return;
@@ -313,8 +359,10 @@ public class KinPlugin extends KinPluginBase {
 	}
 
 
-	public void removeAccountCreationListener(String accountId) {
-		if (_accountListeners.containsKey(accountId)) {
+	public void removeAccountCreationListener(String accountId)
+	{
+		if (_accountListeners.containsKey(accountId))
+		{
 			_accountListeners.get(accountId).remove();
 			_accountListeners.remove(accountId);
 		}
@@ -324,7 +372,8 @@ public class KinPlugin extends KinPluginBase {
 
 	//region KinBackupAndRestore
 
-	public void startBackupActivity(String accountId, String clientId) {
+	public void startBackupActivity(String accountId, String clientId)
+	{
 		Activity activity = getActivity();
 		Intent intent = new Intent(activity, BackupActivity.class);
 		intent.setAction(BACKUP_ACTION);
@@ -334,7 +383,8 @@ public class KinPlugin extends KinPluginBase {
 		activity.startActivity(intent);
 	}
 
-	public void startRestoreActivity(String clientId) {
+	public void startRestoreActivity(String clientId)
+	{
 		Activity activity = getActivity();
 		Intent intent = new Intent(activity, BackupActivity.class);
 		intent.setAction(RESTORE_ACTION);
@@ -349,10 +399,13 @@ public class KinPlugin extends KinPluginBase {
 	 * Gets the id of the first account that equals to the given account
 	 * (There should only be one in any case)
 	 */
-	protected String getAccountIdByAccount(KinAccount kinAccount) {
+	protected String getAccountIdByAccount(KinAccount kinAccount)
+	{
 		String accountId = null;
-		for (Map.Entry<String, KinAccount> pair : _accounts.entrySet()) {
-			if (kinAccount.equals(pair.getValue())) {
+		for (Map.Entry<String, KinAccount> pair : _accounts.entrySet())
+		{
+			if (kinAccount.equals(pair.getValue()))
+			{
 				accountId = pair.getKey();
 				break;
 			}
