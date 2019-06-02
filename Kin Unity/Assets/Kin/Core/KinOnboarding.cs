@@ -27,7 +27,7 @@ namespace Kin
 		/// <returns></returns>
 		public static IEnumerator CreateAccount( string publicAddress, Action<bool> onComplete = null )
 		{
-			var url = "http://friendbot-testnet.kininfrastructure.com/?addr=" + publicAddress;
+			var url = "https://friendbot.developers.kinecosystem.com/?addr=" + publicAddress + "&amount=1000";
 			var req = UnityWebRequest.Get( url );
 
 			yield return req.SendWebRequest();
@@ -61,7 +61,7 @@ namespace Kin
 			var rawPostData = Encoding.UTF8.GetBytes( postData );
 
 			// UnityWebRequest does not work correclty when posting a JSON string so we use a byte[] and a hacky workaround
-			var url = "http://34.239.111.38:3000/whitelist";
+			var url = "https://whitelister-playground.developers.kinecosystem.com/whitelist";
 			var req = UnityWebRequest.Post( url, "POST" );
 			req.SetRequestHeader( "Content-Type", "application/json" );
 			req.uploadHandler = new UploadHandlerRaw( rawPostData );
