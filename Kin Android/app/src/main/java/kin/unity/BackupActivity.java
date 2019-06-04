@@ -17,9 +17,9 @@ import kin.sdk.KinClient;
 
 public class BackupActivity extends Activity {
 
-    KinPlugin _plugin = KinPlugin.instance();
-    String LOGTAG = KinPlugin.TAG + ".Backup";
-    BackupAndRestoreManager backupManager;
+    private KinPlugin _plugin = KinPlugin.instance();
+    private static final String LOGTAG = KinPlugin.TAG + ".Backup";
+    private BackupAndRestoreManager backupManager;
 
     String managerId;
     String clientId;
@@ -34,15 +34,12 @@ public class BackupActivity extends Activity {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         String action = intent.getAction();
-        clientId = intent.getStringExtra("clientId");
+        clientId = intent.getStringExtra(KinPlugin.CLIENT_ID);
 
-        if (action.equals(KinPlugin.BACKUP_ACTION))
-        {
-            accountId = intent.getStringExtra("accountId");
+        if (action.equals(KinPlugin.BACKUP_ACTION)) {
+            accountId = intent.getStringExtra(KinPlugin.ACCOUNT_ID);
             backupAccount(accountId, clientId);
-        }
-        else if (action.equals(KinPlugin.RESTORE_ACTION))
-        {
+        } else if (action.equals(KinPlugin.RESTORE_ACTION)) {
             restoreAccount(clientId);
         }
     }
@@ -59,8 +56,7 @@ public class BackupActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (backupManager != null)
-        {
+        if (backupManager != null) {
             releaseBackupManager();
         }
     }
@@ -97,13 +93,10 @@ public class BackupActivity extends Activity {
                 String accountId = _plugin.getAccountIdByAccount(kinAccount);
                 // If we already have this account, there is no need to add it again to the list.
                 // The account will still be added internally to the kin client until this bug will be fixed in the android b&r module
-                if (accountId == null)
-                {
+                if (accountId == null) {
                     accountId = _plugin.generateUniqueId();
-                    _plugin._accounts.put(accountId, kinAccount);
-                }
-                else
-                {
+                    _plugin._putAccount(accountId, kinAccount);
+                } else {
                     Log.d(LOGTAG, "Restored existing account");
                 }
                 _plugin.unitySendMessage("RestoreSucceeded", _plugin.callbackToJson(accountId, clientId));
@@ -129,18 +122,16 @@ public class BackupActivity extends Activity {
 
     protected void backupAccount(String accountId, String clientId)
     {
-        try
-        {
+        try {
             backupManager = createBackupAndRestoreManager(clientId, accountId);
-            KinClient client = _plugin._clients.get(clientId);
-            KinAccount account = _plugin._accounts.get(accountId);
+            KinClient client = _plugin._getClient(clientId);
+            KinAccount account = _plugin._getAccount(accountId);
 
             backupManager.backup(client, account);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.printStackTrace();
-            Log.e( LOGTAG, "backupAccount failed", e );
+            Log.e(LOGTAG, "backupAccount failed", e);
             _plugin.unitySendMessage("BackupFailed", _plugin.exceptionToJson(e, managerId));
             finish();
         }
@@ -148,17 +139,15 @@ public class BackupActivity extends Activity {
 
     protected void restoreAccount(String clientId)
     {
-        try
-        {
+        try {
             backupManager = createBackupAndRestoreManager(clientId, null);
-            KinClient client = _plugin._clients.get(clientId);
+            KinClient client = _plugin._getClient(clientId);
 
             backupManager.restore(client);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.printStackTrace();
-            Log.e( LOGTAG, "restoreAccount failed", e );
+            Log.e(LOGTAG, "restoreAccount failed", e);
             _plugin.unitySendMessage("onRestore", _plugin.exceptionToJson(e, managerId));
             finish();
         }
@@ -166,14 +155,12 @@ public class BackupActivity extends Activity {
 
     public void releaseBackupManager()
     {
-        try
-        {
+        try {
             backupManager.release();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.printStackTrace();
-            Log.e( LOGTAG, "releaseBackupManager failed", e );
+            Log.e(LOGTAG, "releaseBackupManager failed", e);
         }
     }
 }

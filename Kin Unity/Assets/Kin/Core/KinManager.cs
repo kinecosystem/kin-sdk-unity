@@ -182,8 +182,6 @@ namespace Kin
 
         void BackupSucceeded( string json )
         {
-            // param.AccountId is actually the ClientId
-            // #TODO: Change "AccountId" naming to "CallerId"
             var param = JsonUtility.FromJson<CallbackParam>(json);
             onBackup.FireActionInDict(param.AccountId, null, BackupRestoreResult.Success);
         }
