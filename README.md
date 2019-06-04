@@ -304,17 +304,16 @@ public void OnEvent()
 
 To unregister any listener use `RemovePaymentListener`, `RemoveBalanceListener` or `RemoveAccountCreationListener` methods.
 
-## Account backup & restore
-The SDK comes with a built-in module that provides an easy way to backup and restore an account.
-The module's UI includes two flows, backup and restore. The UI wraps the native SDK's import and export
+## Account Backup & Restore
+The SDK comes with a built-in module that provides an easy way to back up and restore an account.
+The module's UI includes two flows, Backup and Restore. The UI wraps the native SDK's import and export
 functionalities, on which these flows are based.
-The UI uses a password to create a QR code,
-which is then used to back up the account and to restore it.
+The UI uses a password to create a QR code, which is then used to back up the account and to restore it.
 
 ### Backup
 
-To backup a kin account object, all you need to do is call the ```BackupAccount``` method of the KinAccount you wish to backup.
-The method requires two parameters, a KinClient object, and an OnComplete callback.
+To back up an account, all you need to do is call the ```BackupAccount``` method of the ```KinAccount``` you wish to back up.
+The method requires two parameters - the ```KinClient``` object and an OnComplete callback.
 ```csharp
 account.BackupAccount(_client,
                (KinException ex, BackupRestoreResult result) => {
@@ -334,7 +333,7 @@ account.BackupAccount(_client,
 
 ### Restore
 
-To restore a kin account, you need to call the ```RestoreAccount``` method of the KinClient object.
+To restore a Kin account, you need to call the ```RestoreAccount``` method of the ```KinClient``` object.
 The method only requires an OnComplete callback.
 
 ```csharp
@@ -357,7 +356,7 @@ client.RestoreAccount(
                    }
 ```
 
-Please note that the sdk lunches a separate native activity to perform the backup/restore process.
+Please note that the SDK launches a separate native activity to perform the backup/restore process.
 
 ## Error Handling
 
