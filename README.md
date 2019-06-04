@@ -43,7 +43,7 @@ android {
 ```
 
 
-## iOS Setup
+## iOS Setup - Not supported yet
 
 In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
 
@@ -304,6 +304,59 @@ public void OnEvent()
 
 To unregister any listener use `RemovePaymentListener`, `RemoveBalanceListener` or `RemoveAccountCreationListener` methods.
 
+## Account Backup & Restore
+The SDK comes with a built-in module that provides an easy way to back up and restore an account.
+The module's UI includes two flows, Backup and Restore. The UI wraps the native SDK's import and export
+functionalities, on which these flows are based.
+The UI uses a password to create a QR code, which is then used to back up the account and to restore it.
+
+### Backup
+
+To back up an account, all you need to do is call the ```BackupAccount``` method of the ```KinAccount``` you wish to back up.
+The method requires two parameters - the ```KinClient``` object and an OnComplete callback.
+```csharp
+account.BackupAccount(_client,
+               (KinException ex, BackupRestoreResult result) => {
+                   switch (result)
+                   {
+                       case BackupRestoreResult.Success:
+                           Debug.Log("Account backed up successfully");
+                           break;
+                       case BackupRestoreResult.Cancel:
+                           Debug.Log("Account backup canceled");
+                           break;
+                       case BackupRestoreResult.Failed:
+                           Debug.Log("Account backup failed");
+                           Debug.LogError(ex);
+                           break;
+```
+
+### Restore
+
+To restore a Kin account, you need to call the ```RestoreAccount``` method of the ```KinClient``` object.
+The method only requires an OnComplete callback.
+
+```csharp
+client.RestoreAccount(
+               (KinException ex, BackupRestoreResult result, KinAccount account) => {
+                   switch (result)
+                   {
+                       case BackupRestoreResult.Success:
+                           Debug.Log("Account successfully restored");
+                           // Save the restored account
+                           MyAccount = account;
+                           break;
+                       case BackupRestoreResult.Cancel:
+                           Debug.Log("Account restoration canceled");
+                           break;
+                       case BackupRestoreResult.Failed:
+                           Debug.Log("Account restoration failed");
+                           Debug.LogError(ex);
+                           break;
+                   }
+```
+
+Please note that the SDK launches a separate native activity to perform the backup/restore process.
 
 ## Error Handling
 
