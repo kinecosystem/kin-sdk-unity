@@ -358,6 +358,28 @@ client.RestoreAccount(
 
 Please note that the SDK launches a separate native activity to perform the backup/restore process.
 
+### Import & Export
+If you wish to import and export an account without the UI that the previous methods provided, you can use the following:
+
+To export:  
+You can export an account using its corresponding `KinAccount` object. It will return the account data as a JSON string.  
+You just need to pass a passphrase, which will be used to encrypt the the private key.  
+This passphrase will be later needed to import the account.  
+
+```csharp
+exportedAccountJson = account.Export( importExportPassphrase );
+```
+
+
+To import:  
+You need to pass the JSON string that was received when the account was exported and the passphrase that was used to export the account.
+
+```csharp
+account = client.ImportAccount( exportedAccountJson, importExportPassphrase );
+```
+
+
+
 ## Error Handling
 
 The Kin Unity Plugin wraps Kin native exceptions in the C# KinException class. It provides a `NativeType` field that will contain the native error type, some of which are in the Common Error section that follows.
