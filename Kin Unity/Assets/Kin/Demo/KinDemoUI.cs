@@ -123,8 +123,37 @@ namespace Kin
 					addListeners();
 			}
 
+            if (GUILayout.Button("Restore Account"))
+            {
+                _client.RestoreAccount(
+                (KinException ex, BackupRestoreResult result, KinAccount account) => {
+                    switch (result)
+                    {
+                        case BackupRestoreResult.Success:
+                            Debug.Log("Account successfully restored");
+                            // Remove listeners from the currnet account
+                            removeListeners();
 
-			if( _account == null )
+                            _account = account;
+                            // Add listeners to the new account
+                            addListeners();
+                            _account.GetStatus((KinException error, AccountStatus status) =>
+                            {
+                                _isAccountCreated = status == AccountStatus.Created;
+                            });
+                            break;
+                        case BackupRestoreResult.Cancel:
+                            Debug.Log("Account restoration canceled");
+                            break;
+                        case BackupRestoreResult.Failed:
+                            Debug.Log("Account restoration failed");
+                            Debug.LogError(ex);
+                            break;
+                    }
+                });
+            }
+
+            if ( _account == null )
 				return;
 
 
@@ -141,7 +170,7 @@ namespace Kin
 					return;
 				}
 			}
-		}
+        }
 
 
 		protected override void OnRightColumnGUI()
@@ -266,7 +295,27 @@ namespace Kin
 			{
 				StartCoroutine( SendWhitelistTransaction() );
 			}
-		}
+
+            if (GUILayout.Button("Backup Account"))
+            {
+                _account.BackupAccount(_client,
+                (KinException ex, BackupRestoreResult result) => {
+                    switch (result)
+                    {
+                        case BackupRestoreResult.Success:
+                            Debug.Log("Account backed up successfully");
+                            break;
+                        case BackupRestoreResult.Cancel:
+                            Debug.Log("Account backup canceled");
+                            break;
+                        case BackupRestoreResult.Failed:
+                            Debug.Log("Account backup failed");
+                            Debug.LogError(ex);
+                            break;
+                    }
+                });
+            }
+        }
 
 
 		#region Blockchain Listeners

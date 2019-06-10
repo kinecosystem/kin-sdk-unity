@@ -1,5 +1,10 @@
-<manifest package="com.kin.unityplugin" xmlns:android="http://schemas.android.com/apk/res/android">
-    <application>
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kin.unityplugin">
 
+    <application>
+        <activity android:name="kin.unity.BackupActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
     </application>
+
 </manifest>

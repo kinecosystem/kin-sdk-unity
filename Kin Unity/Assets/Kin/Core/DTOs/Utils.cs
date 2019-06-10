@@ -57,40 +57,6 @@ namespace Kin
 		}
 
 
-		/// <summary>
-		/// fires the action in dict and then removes it
-		/// </summary>
-		/// <param name="Dictionary<string"></param>
-		/// <param name="dict"></param>
-		/// <param name="key"></param>
-		/// <param name="param"></param>
-		/// <typeparam name="T"></typeparam>
-		public static void FireActionInDict<T>( this Dictionary<string,Action<T>> dict, string key, T param )
-		{
-			if( key == null )
-			{
-				Debug.LogWarning( "FireActionInDict received a null key!" );
-				return;
-			}
-			
-			if( dict.ContainsKey( key ) )
-			{
-				dict[key]( param );
-				dict.Remove( key );
-			}
-		}
-
-
-		/// <summary>
-		/// fires the action in dict and then removes it
-		/// </summary>
-		/// <param name="Dictionary<string"></param>
-		/// <param name="dict"></param>
-		/// <param name="key"></param>
-		/// <param name="param1"></param>
-		/// <param name="param2"></param>
-		/// <typeparam name="T"></typeparam>
-		/// <typeparam name="U"></typeparam>
 		public static void FireActionInDict<T,U>( this Dictionary<string,Action<T,U>> dict, string key, T param1, U param2 )
 		{
 			if( key == null )
@@ -106,5 +72,21 @@ namespace Kin
 			}
 		}
 
-	}
+        public static void FireActionInDict<T,U,X>(this Dictionary<string, Action<T,U,X>> dict,
+         string key, T param, U param2, X param3)
+        {
+            if (key == null)
+            {
+                Debug.LogWarning("FireActionInDict received a null key!");
+                return;
+            }
+
+            if (dict.ContainsKey(key))
+            {
+                dict[key](param, param2, param3);
+                dict.Remove(key);
+            }
+        }
+
+    }
 }

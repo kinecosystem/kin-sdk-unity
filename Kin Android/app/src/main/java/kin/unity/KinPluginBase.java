@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import kin.sdk.PaymentInfo;
 import kin.sdk.Transaction;
@@ -239,6 +240,16 @@ abstract class KinPluginBase
 		}
 
 		return json.toString();
+	}
+
+	/**
+	 * Generate a unique id (11 lowercase/numbers), should be equivalent to Utils.RandomString we use in Unity
+	 * @return
+	 */
+	protected String generateUniqueId()
+	{
+		return UUID.randomUUID().toString().substring(0,11);
+
 	}
 
 }

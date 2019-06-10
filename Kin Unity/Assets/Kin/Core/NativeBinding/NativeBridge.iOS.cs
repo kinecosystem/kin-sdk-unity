@@ -10,7 +10,7 @@ namespace Kin
 		public static readonly NativeBridgeIos Instance = new NativeBridgeIos();
 
 
-		#region KinClient
+#region KinClient
 
 		[DllImport("__Internal")]
 		static extern void _kinCreateClient( string clientId, int environment, string apiKey, string storeKey );
@@ -92,10 +92,16 @@ namespace Kin
 			_kinGetMinimumFee( clientId );
 		}
 
-		#endregion
+        [DllImport("__Internal")]
+        static extern void _kinRestoreAccount(string clientId);
+
+        public void RestoreAccount(string clientId)
+        { }
+
+#endregion
 
 
-		#region KinAccount
+#region KinAccount
 
 		[DllImport("__Internal")]
 		static extern void _kinFreeCachedAccount( string accountId );
@@ -223,8 +229,14 @@ namespace Kin
 			_kinRemoveAccountCreationListener( accountId );
 		}
 
-		#endregion
+        [DllImport("__Internal")]
+        static extern void _kinBackupAccount(string accountId, string clientId);
 
-	}
+        public void BackupAccount(string accountId, string clientId)
+        { }
+
+#endregion
+
+    }
 }
 #endif
