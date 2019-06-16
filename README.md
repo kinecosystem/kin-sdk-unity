@@ -26,8 +26,9 @@ allprojects {
 dependencies {
 
     ...
+        implementation 'com.github.kinecosystem.kin-sdk-android:kin-sdk-lib:1.0.5'
+        implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:1.0.5'
 
-	implementation 'com.github.kinecosystem:kin-sdk-android:1.0.1'
 **DEPS**}
 
 ...
