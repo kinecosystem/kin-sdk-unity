@@ -97,10 +97,18 @@ namespace Kin
 					}
 				}
 
-				// if we found an account add blockchain listeners that will log the events as they happen
-				if( _account != null )
-					addListeners();
-			}
+                // if we found an account add blockchain listeners that will log the events as they happen
+                if (_account != null)
+                {
+                    addListeners();
+                    _account.GetStatus((KinException error, AccountStatus status) =>
+                    {
+                        _isAccountCreated = status == AccountStatus.Created;
+                    });
+
+                }
+
+            }
 
 
 			GUILayout.Space( 40 );
@@ -184,7 +192,7 @@ namespace Kin
 				return;
 
 			GUILayout.Label( "Onboarding" );
-			if( !_isAccountCreated && GUILayout.Button( "Create Account" ) )
+            if ( !_isAccountCreated && GUILayout.Button( "Create Account" ) )
 			{
 				ShowProgressWindow( "Create Account Onboarding" );
 				StartCoroutine( KinOnboarding.CreateAccount( _account.GetPublicAddress(), didSucceed =>
