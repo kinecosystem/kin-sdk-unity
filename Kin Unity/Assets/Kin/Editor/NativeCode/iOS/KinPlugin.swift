@@ -123,10 +123,10 @@ struct Provider: ServiceProvider {
 			dict["Id"] = transactionId
 			dict["WhitelistableTransactionPayLoad"] = whitelistPayload
 			dict["WhitelistableTransactionNetworkPassphrase"] = Network.testNet.id
-			
+
 			let jsonData = try JSONSerialization.data( withJSONObject: dict, options: [] )
 			let jsonString = String( data: jsonData, encoding: .utf8 )
-			
+
 			return jsonString!
 		}
 		catch {
@@ -142,8 +142,9 @@ struct Provider: ServiceProvider {
 		let provider = environment == 0 ? Provider.Test : Provider.Main
 		
 		do {
-			let client = KinClient( provider: provider, appId: try AppId( apiKey ) )
-			self.clients[clientId] = client;
+			let appId = try AppId(apiKey)
+			let client = KinClient( provider: provider, appId: appId )
+			self.clients[clientId] = client
 			self.networkId = client.network.id
 		}
 		catch {
