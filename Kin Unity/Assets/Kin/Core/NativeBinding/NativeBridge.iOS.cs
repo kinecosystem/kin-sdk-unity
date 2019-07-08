@@ -92,8 +92,8 @@ namespace Kin
 			_kinGetMinimumFee( clientId );
 		}
 
-        [DllImport("__Internal")]
-        static extern void _kinRestoreAccount(string clientId);
+        //[DllImport("__Internal")]
+        //static extern void _kinRestoreAccount(string clientId);
 
         public void RestoreAccount(string clientId)
         { }
@@ -229,8 +229,8 @@ namespace Kin
 			_kinRemoveAccountCreationListener( accountId );
 		}
 
-        [DllImport("__Internal")]
-        static extern void _kinBackupAccount(string accountId, string clientId);
+        //[DllImport("__Internal")]
+        //static extern void _kinBackupAccount(string accountId, string clientId);
 
         public void BackupAccount(string accountId, string clientId)
         { }
