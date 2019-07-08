@@ -117,7 +117,7 @@ struct Provider: ServiceProvider {
 			let whitelistEnvelope = WhitelistEnvelope(transactionEnvelope: transaction, networkId: self.networkId)
 			let encodedEnvelope = try? JSONEncoder().encode(whitelistEnvelope)
 			let whitelistDict = try! JSONSerialization.jsonObject(with: encodedEnvelope!, options: []) as? [String:String]
-			let whitelistPayload = whitelistDict!["envelope"]
+			let whitelistPayload = whitelistDict!["tx_envelope"]
 			
 			var dict = ["AccountId": accountId] as [String : Any]
 			dict["Id"] = transactionId
