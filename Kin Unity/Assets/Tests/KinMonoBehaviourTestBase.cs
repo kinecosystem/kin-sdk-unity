@@ -137,8 +137,6 @@ public abstract class KinMonoBehaviourTestBase : MonoBehaviour, IMonoBehaviourTe
         _account.BuildTransaction(_sendToAddress, -50, _feeAmount, (ex, transaction) =>
         {
             Assert.IsNotNull(ex);
-            Debug.Log(Application.platform);
-            Debug.Log(ex);
             if (Application.platform == RuntimePlatform.Android)
             {
                 Assert.IsTrue(ex.NativeType.Equals("IllegalArgumentException"));

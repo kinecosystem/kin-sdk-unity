@@ -75,7 +75,6 @@ struct BackupRestoreRequest {
 	
 	private func unitySendMessage( method: String, param: String ) {
 		UnitySendMessage( "KinManager", method, param )
-        UnityCaptureScreenshot()
 	}
 	
 	
