@@ -123,7 +123,7 @@ public class KinTests
 	}
 
 
-	[UnityTest]
+    [UnityTest]
 	public IEnumerator AddAndCreateAccount()
 	{
 		yield return new MonoBehaviourTest<AddAndCreateAccountTest>();

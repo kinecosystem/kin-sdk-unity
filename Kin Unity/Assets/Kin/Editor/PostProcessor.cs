@@ -33,11 +33,13 @@ namespace Kin
 				var dest = Path.Combine( buildPath, Path.GetFileName( file ) );
 				if( !File.Exists( dest ) )
 					File.Copy( file, dest );
-
-				file = Directory.GetFiles( Application.dataPath, "Podfile", SearchOption.AllDirectories ).First();
+                    
+                file = Directory.GetFiles( Application.dataPath, "Podfile", SearchOption.AllDirectories ).First();
 				dest = Path.Combine( buildPath, "Podfile" );
-				if( !File.Exists( dest ) )
-					File.Copy( file, dest );
+
+                string PodfileContents = File.ReadAllText(file);
+                PodfileContents = PodfileContents.Replace("<platform_version>", PlayerSettings.iOS.targetOSVersionString);
+                File.WriteAllText( dest, PodfileContents);
 
 				file = Directory.GetFiles( Application.dataPath, "pods.command", SearchOption.AllDirectories ).First();
 				dest = Path.Combine( buildPath, Path.GetFileName( file ) );

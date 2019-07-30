@@ -1,9 +1,10 @@
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+# Then next line is modified at build time
+platform :ios, '<platform_version>'
 
 target 'Unity-iPhone' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
   use_frameworks!
 
-  pod 'KinSDK'
+  pod 'KinSDK', '1.0.2' 
+  pod 'KinBackupRestoreModule', '1.0.1'
 end

@@ -14,6 +14,8 @@ public class SendTransactionTest : KinMonoBehaviourTestBase
 
 		yield return StartCoroutine( CheckAccountBalance( 100 ) );
 
+        yield return StartCoroutine(BuildTransactionFail());
+
 		yield return StartCoroutine( BuildTransaction( 100 ) );
 
 		yield return StartCoroutine( SendTransaction() );

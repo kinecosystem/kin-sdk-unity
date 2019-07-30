@@ -92,11 +92,13 @@ namespace Kin
 			_kinGetMinimumFee( clientId );
 		}
 
-        //[DllImport("__Internal")]
-        //static extern void _kinRestoreAccount(string clientId);
+        [DllImport("__Internal")]
+        static extern void _kinRestoreAccount(string clientId);
 
         public void RestoreAccount(string clientId)
-        { }
+        {
+            _kinRestoreAccount(clientId); 
+        }
 
 #endregion
 
@@ -229,11 +231,15 @@ namespace Kin
 			_kinRemoveAccountCreationListener( accountId );
 		}
 
-        //[DllImport("__Internal")]
-        //static extern void _kinBackupAccount(string accountId, string clientId);
+        [DllImport("__Internal")]
+        static extern void _kinBackupAccount(string accountId);
 
         public void BackupAccount(string accountId, string clientId)
-        { }
+        {
+            // clientId is not used on iOS, but the method signature needs 
+            // it because of the unified interface with android
+            _kinBackupAccount( accountId );
+        }
 
 #endregion
 

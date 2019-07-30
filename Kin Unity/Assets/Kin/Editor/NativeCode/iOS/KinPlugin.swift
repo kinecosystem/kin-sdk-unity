@@ -4,9 +4,10 @@
 //
 //  Created by desaro on 11/2/18.
 //
-
+import UIKit
 import Foundation
 import KinSDK
+import KinBackupRestoreModule
 import Sodium
 
 
@@ -24,6 +25,23 @@ struct Provider: ServiceProvider {
 	}
 }
 
+enum backupAction {
+    case BACKUP
+    case RESTORE
+}
+
+// Struct to cache the params the were requested to use in the callbacks
+struct BackupRestoreRequest {
+    public var action: backupAction
+    public var requestingClientId: String
+    public var requestingAccountId: String
+    
+    init(action: backupAction, clientId: String, accountId: String) {
+        self.action = action
+        self.requestingClientId = clientId
+        self.requestingAccountId = accountId
+    }
+}
 
 @objc class KinPlugin : NSObject {
 	@objc static let instance = KinPlugin()
@@ -38,22 +56,31 @@ struct Provider: ServiceProvider {
 	
 	let formatter = NumberFormatter()
 	var networkId: String = ""
-	
+    
+    let vc: UIViewController = UnityGetGLViewController()
+    
+    let backupRestoreManager = KinBackupRestoreManager()
+    var lastBackupRestoreRequest: BackupRestoreRequest?
+    
+    
 	
 	override init()
 	{
+        super.init()
 		formatter.generatesDecimalNumbers = true
+        self.backupRestoreManager.delegate = self
 	}
-	
+
 	// MARK: - helpers
 	
 	private func unitySendMessage( method: String, param: String ) {
 		UnitySendMessage( "KinManager", method, param )
+        UnityCaptureScreenshot()
 	}
 	
 	
 	private func errorToJson( error: Error, accountId: String? ) -> String {
-		var dict = ["Message": "", "NativeType": "", "ErrorCode": NSNumber.init( value: 1 )] as [String : Any]
+		var dict = ["Message": error.localizedDescription, "NativeType": String(describing: error), "ErrorCode": NSNumber.init( value: 1 )] as [String : Any]
 		
 		if( accountId != nil ) {
 			dict["AccountId"] = accountId
@@ -443,5 +470,73 @@ struct Provider: ServiceProvider {
 			self.accountListeners.removeValue( forKey: accountId )
 		}
 	}
+    
+    @objc public func restoreAccount( clientId: String ) {
+        if let client = self.clients[clientId] {
+            self.lastBackupRestoreRequest = BackupRestoreRequest(action: backupAction.RESTORE, clientId: clientId, accountId: "")
+            self.backupRestoreManager.restore(client, presentedOnto: self.vc)
+        }
+    }
+    
+    @objc public func backupAccount( accountId: String )
+    {
+        if let account = self.accounts[accountId] {
+            self.lastBackupRestoreRequest = BackupRestoreRequest(action: backupAction.BACKUP, clientId: "", accountId: accountId)
+            self.backupRestoreManager.backup(account, presentedOnto: self.vc)
+        }
+    }
+    
+    private func generateUniqueId() -> String {
+        // Generate a unique id (11 lowercase/numbers), equvilent of the android/c# methods in the Unity relevant code
+        return String(NSUUID().uuidString.prefix(11))
+    }
 	
+}
+
+extension KinPlugin : KinBackupRestoreManagerDelegate {
+    
+    func kinBackupRestoreManagerDidComplete(_ manager: KinBackupRestoreManager, kinAccount: KinAccount?) {
+        switch self.lastBackupRestoreRequest!.action {
+        case .BACKUP:
+            self.unitySendMessage(method: "BackupSucceeded", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingAccountId, value: ""))
+        case .RESTORE:
+            var accountId: String? = nil
+            
+            // If the account already exists, dont get new id/add to dict
+            for (id, account) in self.accounts {
+                if account.publicAddress == kinAccount!.publicAddress {
+                    accountId = id
+                    break
+                }
+            }
+            
+            if accountId == nil {
+                accountId = self.generateUniqueId()
+                self.accounts[accountId!] = kinAccount!
+            }
+            
+            self.unitySendMessage(method: "RestoreSucceeded", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingClientId, value: accountId!))
+                
+        }
+    }
+    
+    func kinBackupRestoreManagerDidCancel(_ manager: KinBackupRestoreManager) {
+        switch self.lastBackupRestoreRequest!.action {
+        case .BACKUP:
+            self.unitySendMessage(method: "BackupCanceled", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingAccountId, value: ""))
+        case .RESTORE:
+            self.unitySendMessage(method: "RestoreCanceled", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingClientId, value: ""))
+        }
+    }
+    
+    func kinBackupRestoreManager(_ manager: KinBackupRestoreManager, error: Error) {
+        switch self.lastBackupRestoreRequest!.action {
+        case .BACKUP:
+            self.unitySendMessage(method: "BackupFailed", param:
+                self.errorToJson(error: error, accountId: self.lastBackupRestoreRequest!.requestingAccountId))
+        case .RESTORE:
+            self.unitySendMessage(method: "RestoreFailed", param:
+                self.errorToJson(error: error, accountId: self.lastBackupRestoreRequest!.requestingClientId))
+        }
+    }
 }
