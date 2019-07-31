@@ -25,23 +25,11 @@ struct Provider: ServiceProvider {
 	}
 }
 
-enum backupAction {
-    case BACKUP
-    case RESTORE
+enum BackupAction {
+    case backup(String)
+    case restore(String)
 }
 
-// Struct to cache the params the were requested to use in the callbacks
-struct BackupRestoreRequest {
-    public var action: backupAction
-    public var requestingClientId: String
-    public var requestingAccountId: String
-    
-    init(action: backupAction, clientId: String, accountId: String) {
-        self.action = action
-        self.requestingClientId = clientId
-        self.requestingAccountId = accountId
-    }
-}
 
 @objc class KinPlugin : NSObject {
 	@objc static let instance = KinPlugin()
@@ -60,12 +48,9 @@ struct BackupRestoreRequest {
     let vc: UIViewController = UnityGetGLViewController()
     
     let backupRestoreManager = KinBackupRestoreManager()
-    var lastBackupRestoreRequest: BackupRestoreRequest?
-    
-    
-	
-	override init()
-	{
+    var lastBackupRestoreRequest: BackupAction?
+
+	override init() {
         super.init()
 		formatter.generatesDecimalNumbers = true
         self.backupRestoreManager.delegate = self
@@ -472,16 +457,15 @@ struct BackupRestoreRequest {
     
     @objc public func restoreAccount( clientId: String ) {
         if let client = self.clients[clientId] {
-            self.lastBackupRestoreRequest = BackupRestoreRequest(action: backupAction.RESTORE, clientId: clientId, accountId: "")
-            self.backupRestoreManager.restore(client, presentedOnto: self.vc)
+            lastBackupRestoreRequest = BackupAction.restore(clientId);
+            backupRestoreManager.restore(client, presentedOnto: self.vc)
         }
     }
     
-    @objc public func backupAccount( accountId: String )
-    {
-        if let account = self.accounts[accountId] {
-            self.lastBackupRestoreRequest = BackupRestoreRequest(action: backupAction.BACKUP, clientId: "", accountId: accountId)
-            self.backupRestoreManager.backup(account, presentedOnto: self.vc)
+    @objc public func backupAccount(accountId: String) {
+        if let account = accounts[accountId] {
+            lastBackupRestoreRequest = BackupAction.backup(accountId);
+            backupRestoreManager.backup(account, presentedOnto: vc)
         }
     }
     
@@ -489,53 +473,64 @@ struct BackupRestoreRequest {
         // Generate a unique id (11 lowercase/numbers), equvilent of the android/c# methods in the Unity relevant code
         return String(NSUUID().uuidString.prefix(11))
     }
-	
 }
 
-extension KinPlugin : KinBackupRestoreManagerDelegate {
-    
+extension KinPlugin: KinBackupRestoreManagerDelegate {
     func kinBackupRestoreManagerDidComplete(_ manager: KinBackupRestoreManager, kinAccount: KinAccount?) {
-        switch self.lastBackupRestoreRequest!.action {
-        case .BACKUP:
-            self.unitySendMessage(method: "BackupSucceeded", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingAccountId, value: ""))
-        case .RESTORE:
-            var accountId: String? = nil
-            
-            // If the account already exists, dont get new id/add to dict
-            for (id, account) in self.accounts {
-                if account.publicAddress == kinAccount!.publicAddress {
-                    accountId = id
-                    break
-                }
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupSucceeded", param: callbackToJson(accountId: accountId, value: ""))
+        case .restore(let clientId):
+            guard let kAccount = kinAccount else {
+                return
             }
             
-            if accountId == nil {
-                accountId = self.generateUniqueId()
-                self.accounts[accountId!] = kinAccount!
+            let accountId: String
+
+            if let matchedId = accounts
+                .first(where: { $1.publicAddress == kAccount.publicAddress})?
+                .key {
+                accountId = matchedId
+            } else {
+                accountId = generateUniqueId()
+                accounts[accountId] = kAccount
             }
-            
-            self.unitySendMessage(method: "RestoreSucceeded", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingClientId, value: accountId!))
+
+            unitySendMessage(method: "RestoreSucceeded",
+                             param: callbackToJson(accountId: clientId, value: accountId))
                 
         }
     }
     
     func kinBackupRestoreManagerDidCancel(_ manager: KinBackupRestoreManager) {
-        switch self.lastBackupRestoreRequest!.action {
-        case .BACKUP:
-            self.unitySendMessage(method: "BackupCanceled", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingAccountId, value: ""))
-        case .RESTORE:
-            self.unitySendMessage(method: "RestoreCanceled", param: self.callbackToJson(accountId: self.lastBackupRestoreRequest!.requestingClientId, value: ""))
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupCanceled", param: self.callbackToJson(accountId: accountId, value: ""))
+        case .restore(let clientId):
+            unitySendMessage(method: "RestoreCanceled", param: self.callbackToJson(accountId: clientId, value: ""))
         }
     }
     
     func kinBackupRestoreManager(_ manager: KinBackupRestoreManager, error: Error) {
-        switch self.lastBackupRestoreRequest!.action {
-        case .BACKUP:
-            self.unitySendMessage(method: "BackupFailed", param:
-                self.errorToJson(error: error, accountId: self.lastBackupRestoreRequest!.requestingAccountId))
-        case .RESTORE:
-            self.unitySendMessage(method: "RestoreFailed", param:
-                self.errorToJson(error: error, accountId: self.lastBackupRestoreRequest!.requestingClientId))
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupFailed", param:
+                errorToJson(error: error, accountId: accountId))
+        case .restore(let clientId):
+            unitySendMessage(method: "RestoreFailed", param:
+                errorToJson(error: error, accountId: clientId))
         }
     }
 }

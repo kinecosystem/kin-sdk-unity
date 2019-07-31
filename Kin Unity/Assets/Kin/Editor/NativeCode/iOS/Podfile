@@ -1,4 +1,4 @@
-# Then next line is modified at build time
+# The next line is modified at build time
 platform :ios, '<platform_version>'
 
 target 'Unity-iPhone' do
