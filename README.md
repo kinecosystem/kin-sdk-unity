@@ -44,11 +44,23 @@ android {
 ```
 
 
-## iOS Setup - Not supported yet
+## iOS Setup
 
-In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
+1. You need to have [cocoapods](https://cocoapods.org/) installed
 
-Note: if you plan on doing any native iOS developement on the plugin, there are some changes that need to be made to the KinSDK, KinUtil and Sodium Xcode projects. They all need to have bitcode enabled and "build active achitectures only" set to no so that you can get debug symobols.
+2. In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
+
+In addition, there is another step that needs to be done after you finish building your game.  
+Usually you would:  
+1. Build project
+2. Open the resulting .xporject with Xcode
+3. Build using Xcode
+
+To use the the Kin SDK do the following instead:  
+1. Build project
+2. Run the file ```pods.command``` in the output folder
+3. Open the **.xworkspace file with Xcode, not .xproject like usual**
+4. Build using Xcode
 
 
 ## Get Started
