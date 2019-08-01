@@ -161,3 +161,14 @@ void _kinRemoveAccountCreationListener( const char* accountId )
 {
 	[KinPlugin.instance removeAccountCreationListenerWithAccountId:GetStringParam( accountId )];
 }
+
+void _kinRestoreAccount(const char* clientId)
+{
+    [KinPlugin.instance restoreAccountWithClientId:GetStringParam( clientId )];
+}
+
+void _kinBackupAccount(const char* accountId)
+{
+    [KinPlugin.instance backupAccountWithAccountId:GetStringParam( accountId )];
+}
+

@@ -4,9 +4,10 @@
 //
 //  Created by desaro on 11/2/18.
 //
-
+import UIKit
 import Foundation
 import KinSDK
+import KinBackupRestoreModule
 import Sodium
 
 
@@ -24,6 +25,11 @@ struct Provider: ServiceProvider {
 	}
 }
 
+enum BackupAction {
+    case backup(String)
+    case restore(String)
+}
+
 
 @objc class KinPlugin : NSObject {
 	@objc static let instance = KinPlugin()
@@ -38,13 +44,18 @@ struct Provider: ServiceProvider {
 	
 	let formatter = NumberFormatter()
 	var networkId: String = ""
-	
-	
-	override init()
-	{
+    
+    let vc: UIViewController = UnityGetGLViewController()
+    
+    let backupRestoreManager = KinBackupRestoreManager()
+    var lastBackupRestoreRequest: BackupAction?
+
+	override init() {
+        super.init()
 		formatter.generatesDecimalNumbers = true
+        self.backupRestoreManager.delegate = self
 	}
-	
+
 	// MARK: - helpers
 	
 	private func unitySendMessage( method: String, param: String ) {
@@ -53,7 +64,7 @@ struct Provider: ServiceProvider {
 	
 	
 	private func errorToJson( error: Error, accountId: String? ) -> String {
-		var dict = ["Message": "", "NativeType": "", "ErrorCode": NSNumber.init( value: 1 )] as [String : Any]
+		var dict = ["Message": error.localizedDescription, "NativeType": String(describing: error), "ErrorCode": NSNumber.init( value: 1 )] as [String : Any]
 		
 		if( accountId != nil ) {
 			dict["AccountId"] = accountId
@@ -443,5 +454,83 @@ struct Provider: ServiceProvider {
 			self.accountListeners.removeValue( forKey: accountId )
 		}
 	}
-	
+    
+    @objc public func restoreAccount( clientId: String ) {
+        if let client = self.clients[clientId] {
+            lastBackupRestoreRequest = BackupAction.restore(clientId);
+            backupRestoreManager.restore(client, presentedOnto: self.vc)
+        }
+    }
+    
+    @objc public func backupAccount(accountId: String) {
+        if let account = accounts[accountId] {
+            lastBackupRestoreRequest = BackupAction.backup(accountId);
+            backupRestoreManager.backup(account, presentedOnto: vc)
+        }
+    }
+    
+    private func generateUniqueId() -> String {
+        // Generate a unique id (11 lowercase/numbers), equvilent of the android/c# methods in the Unity relevant code
+        return String(NSUUID().uuidString.prefix(11))
+    }
+}
+
+extension KinPlugin: KinBackupRestoreManagerDelegate {
+    func kinBackupRestoreManagerDidComplete(_ manager: KinBackupRestoreManager, kinAccount: KinAccount?) {
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupSucceeded", param: callbackToJson(accountId: accountId, value: ""))
+        case .restore(let clientId):
+            guard let kAccount = kinAccount else {
+                return
+            }
+            
+            let accountId: String
+
+            if let matchedId = accounts
+                .first(where: { $1.publicAddress == kAccount.publicAddress})?
+                .key {
+                accountId = matchedId
+            } else {
+                accountId = generateUniqueId()
+                accounts[accountId] = kAccount
+            }
+
+            unitySendMessage(method: "RestoreSucceeded",
+                             param: callbackToJson(accountId: clientId, value: accountId))
+                
+        }
+    }
+    
+    func kinBackupRestoreManagerDidCancel(_ manager: KinBackupRestoreManager) {
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupCanceled", param: self.callbackToJson(accountId: accountId, value: ""))
+        case .restore(let clientId):
+            unitySendMessage(method: "RestoreCanceled", param: self.callbackToJson(accountId: clientId, value: ""))
+        }
+    }
+    
+    func kinBackupRestoreManager(_ manager: KinBackupRestoreManager, error: Error) {
+        guard let request = lastBackupRestoreRequest else {
+            return
+        }
+        
+        switch request {
+        case .backup(let accountId):
+            unitySendMessage(method: "BackupFailed", param:
+                errorToJson(error: error, accountId: accountId))
+        case .restore(let clientId):
+            unitySendMessage(method: "RestoreFailed", param:
+                errorToJson(error: error, accountId: clientId))
+        }
+    }
 }
