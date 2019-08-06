@@ -45,20 +45,14 @@ android {
 
 
 ## iOS Setup
+Prerequisites:
+* You need to have [CocoaPods](https://cocoapods.org/) installed.  
+* In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
 
-1. You need to have [CocoaPods](https://cocoapods.org/) installed.  
-2. In the iOS Player Settings, the `Target minimum iOS Version` must be set to 8.1 or newer.
-
-In addition, there is another step that needs to be done after you finish building your game.  
-Usually you would:  
-1. Build project
-2. Open the resulting .xporject with Xcode
-3. Build using Xcode
-
-To use the Kin SDK do the following instead:  
-1. Build project
-2. Run the file `pods.command` in the output folder
-3. Open the **.xworkspace file with Xcode, not .xproject like usual**
+To use the Kin SDK, after you finish building your game, do the following:  
+1. Build project.
+2. Run the file `pods.command` in the output folder.
+3. Open the **.xworkspace file** with Xcode (**not .xproject as you would normally do**).
 4. Build using Xcode
 
 
