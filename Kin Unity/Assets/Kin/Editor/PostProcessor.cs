@@ -1,62 +1,68 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+#if UNITY_IOS
 using UnityEditor.iOS.Xcode;
+#endif
 using System.IO;
 using System.Linq;
 
 
 namespace Kin
 {
-	static class PostProcessor
-	{
-		static void ManuallyRunPostProcessor()
-		{
-			var buildPath = Path.Combine( Directory.GetCurrentDirectory(), "Xcode" );
-			OnPostProcessBuild( BuildTarget.iOS, buildPath );
-		}
+    static class PostProcessor
+    {
+        static void ManuallyRunPostProcessor()
+        {
+#if UNITY_IOS
+            var buildPath = Path.Combine(Directory.GetCurrentDirectory(), "Xcode");
+            OnPostProcessBuild(BuildTarget.iOS, buildPath);
+#endif
+        }
 
 
-		[PostProcessBuild]
-		public static void OnPostProcessBuild( BuildTarget buildTarget, string buildPath )
-		{
-			if( buildTarget == BuildTarget.iOS )
-			{
-				var projPath = Path.Combine( buildPath, "Unity-iPhone.xcodeproj/project.pbxproj" );
-				var proj = new PBXProject();
-				proj.ReadFromFile( projPath );
+        [PostProcessBuild]
+        public static void OnPostProcessBuild(BuildTarget buildTarget, string buildPath)
+        {
+#if UNITY_IOS
+            if (buildTarget == BuildTarget.iOS)
+            {
+                var projPath = Path.Combine(buildPath, "Unity-iPhone.xcodeproj/project.pbxproj");
+                var proj = new PBXProject();
+                proj.ReadFromFile(projPath);
 
-				var targetGuid = proj.ProjectGuid();
+                var targetGuid = proj.ProjectGuid();
 
-				// copy our bridging header into the root of the project so Xcode will find it
-				var file = Directory.GetFiles( Application.dataPath, "KinPlugin-Bridging-Header.h", SearchOption.AllDirectories ).First();
-				var dest = Path.Combine( buildPath, Path.GetFileName( file ) );
-				if( !File.Exists( dest ) )
-					File.Copy( file, dest );
-                    
-				file = Directory.GetFiles( Application.dataPath, "Podfile", SearchOption.AllDirectories ).First();
-				dest = Path.Combine( buildPath, "Podfile" );
+                // copy our bridging header into the root of the project so Xcode will find it
+                var file = Directory.GetFiles(Application.dataPath, "KinPlugin-Bridging-Header.h", SearchOption.AllDirectories).First();
+                var dest = Path.Combine(buildPath, Path.GetFileName(file));
+                if (!File.Exists(dest))
+                    File.Copy(file, dest);
 
-				string PodfileContents = File.ReadAllText(file);
-				PodfileContents = PodfileContents.Replace("<platform_version>", PlayerSettings.iOS.targetOSVersionString);
-				File.WriteAllText( dest, PodfileContents);
+                file = Directory.GetFiles(Application.dataPath, "Podfile", SearchOption.AllDirectories).First();
+                dest = Path.Combine(buildPath, "Podfile");
 
-				file = Directory.GetFiles( Application.dataPath, "pods.command", SearchOption.AllDirectories ).First();
-				dest = Path.Combine( buildPath, Path.GetFileName( file ) );
-				if( !File.Exists( dest ) )
-					File.Copy( file, dest );
+                string PodfileContents = File.ReadAllText(file);
+                PodfileContents = PodfileContents.Replace("<platform_version>", PlayerSettings.iOS.targetOSVersionString);
+                File.WriteAllText(dest, PodfileContents);
 
-				//proj.SetBuildProperty( targetGuid, "ENABLE_BITCODE", "NO" );
-				proj.SetBuildProperty( targetGuid, "SWIFT_OBJC_BRIDGING_HEADER", "KinPlugin-Bridging-Header.h" );
-				proj.SetBuildProperty( targetGuid, "SWIFT_OBJC_INTERFACE_HEADER_NAME", "KinPlugin-Generated-Swift.h" );
-				proj.SetBuildProperty( targetGuid, "SWIFT_VERSION", "5.0" );
-				proj.SetBuildProperty( targetGuid, "CLANG_ENABLE_MODULES", "YES" );
-				//proj.AddBuildProperty( targetGuid, "LD_RUNPATH_SEARCH_PATHS", "@executable_path/Frameworks $(inherited)" );
-				//proj.AddBuildProperty( targetGuid, "FRAMERWORK_SEARCH_PATHS", "$(inherited) $(PROJECT_DIR) $(PROJECT_DIR)/Frameworks" );
-				//proj.AddBuildProperty( targetGuid, "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES", "YES" );
+                file = Directory.GetFiles(Application.dataPath, "pods.command", SearchOption.AllDirectories).First();
+                dest = Path.Combine(buildPath, Path.GetFileName(file));
+                if (!File.Exists(dest))
+                    File.Copy(file, dest);
 
-				proj.WriteToFile( projPath );
-			}
-		}
-	}
+                //proj.SetBuildProperty( targetGuid, "ENABLE_BITCODE", "NO" );
+                proj.SetBuildProperty(targetGuid, "SWIFT_OBJC_BRIDGING_HEADER", "KinPlugin-Bridging-Header.h");
+                proj.SetBuildProperty(targetGuid, "SWIFT_OBJC_INTERFACE_HEADER_NAME", "KinPlugin-Generated-Swift.h");
+                proj.SetBuildProperty(targetGuid, "SWIFT_VERSION", "5.0");
+                proj.SetBuildProperty(targetGuid, "CLANG_ENABLE_MODULES", "YES");
+                //proj.AddBuildProperty( targetGuid, "LD_RUNPATH_SEARCH_PATHS", "@executable_path/Frameworks $(inherited)" );
+                //proj.AddBuildProperty( targetGuid, "FRAMERWORK_SEARCH_PATHS", "$(inherited) $(PROJECT_DIR) $(PROJECT_DIR)/Frameworks" );
+                //proj.AddBuildProperty( targetGuid, "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES", "YES" );
+
+                proj.WriteToFile(projPath);
+            }
+#endif
+        }
+    }
 }
