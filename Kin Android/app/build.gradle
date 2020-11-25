@@ -14,6 +14,14 @@ task copyAARToUnityPlugin(type: Copy) {
 
 build.finalizedBy(copyAARToUnityPlugin)
 
+buildscript {
+    // ...
+    ext {
+        versions = [:]
+
+        versions.kin = "0.4.3"
+    }
+}
 
 android {
     compileSdkVersion 27
@@ -43,7 +51,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.kinecosystem.kin-sdk-android:kin-sdk-lib:1.0.5'
-    implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:1.0.5'
+    implementation "org.kin.sdk.android:base-compat:${versions.kin}"
 }
 
