@@ -6,6 +6,8 @@ Kin SDK for Unity is responsible for providing access to the Kin native SDKs for
 
 ## Android Setup
 
+SEE INSTALL.md for manual installation process.
+
 The Kin plugin uses the Gradle build system on Android. See the [Building with Gradle for Android](https://docs.unity3d.com/Manual/android-gradle-overview.html) section of Unity's documentation and the [Providing a custom build.gradle template](https://docs.unity3d.com/Manual/android-gradle-overview.html) to enable the use of a custom gradle file.
 
 Open the `Plugins/Android/mainTemplate.gradle` file and add the following:
@@ -26,8 +28,7 @@ allprojects {
 dependencies {
 
     ...
-        implementation 'com.github.kinecosystem.kin-sdk-android:kin-sdk-lib:1.0.5'
-        implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:1.0.5'
+        implementation 'org.kin.sdk.android:base-compat:0.4.5'
 
 **DEPS**}
 

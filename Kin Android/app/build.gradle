@@ -24,16 +24,13 @@ android {
         versionName "1.0"
     }
     defaultConfig {
-        consumerProguardFiles 'proguard-rules.pro'
     }
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -43,7 +40,5 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.kinecosystem.kin-sdk-android:kin-sdk-lib:1.0.5'
-    implementation 'com.github.kinecosystem.kin-sdk-android:kin-backup-and-restore-lib:1.0.5'
+    implementation 'org.kin.sdk.android:base-compat:0.4.5'
 }
-
